@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class ESeveranceType : uint8
 {
-    NameSeverance UMETA(DisplayName = "Name Severance"),
-    DivineCut UMETA(DisplayName = "Divine Cut"),
-    SacredRending UMETA(DisplayName = "Sacred Rending")
+    NameOfCreation UMETA(DisplayName = "Name of Creation"),
+    NameOfDestruction UMETA(DisplayName = "Name of Destruction"),
+    NameOfBalance UMETA(DisplayName = "Name of Balance")
 };
 
 UCLASS()
@@ -35,7 +35,7 @@ public:
     void DeactivateSeverance();
 
     UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void TargetSeverance(AActor* Target);
+    void SeverTarget(AActor* Target);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Severance Properties")
@@ -79,6 +79,7 @@ private:
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateSeveranceState(float DeltaTime);
-    void CheckTargetValidity();
+    bool CheckTargetValidity(AActor* Target);
     float CalculateSeveranceStrength(AActor* Target);
+    void ModifyReality(AActor* Target, float DeltaTime);
 }; 

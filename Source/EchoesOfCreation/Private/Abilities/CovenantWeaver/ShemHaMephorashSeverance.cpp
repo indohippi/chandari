@@ -9,6 +9,7 @@ AShemHaMephorashSeverance::AShemHaMephorashSeverance()
     PrimaryActorTick.bCanEverTick = true;
     bIsActive = false;
     CurrentTarget = nullptr;
+    SeveranceRange = 1000.0f;
 }
 
 void AShemHaMephorashSeverance::BeginPlay()
@@ -16,19 +17,18 @@ void AShemHaMephorashSeverance::BeginPlay()
     Super::BeginPlay();
 
     // Initialize default values
-    SeveranceRange = 500.0f;
-    ResonanceGenerationRate = 1.5f;
+    ResonanceGenerationRate = 2.5f;
     bIsActive = false;
 
     // Setup default resonance modifiers
-    ResonanceModifiers.Add(EResonanceType::Faith, 1.2f);
-    ResonanceModifiers.Add(EResonanceType::Doubt, 1.5f);
-    ResonanceModifiers.Add(EResonanceType::Curiosity, 1.8f);
+    ResonanceModifiers.Add(EResonanceType::Faith, 3.0f);
+    ResonanceModifiers.Add(EResonanceType::Doubt, 2.0f);
+    ResonanceModifiers.Add(EResonanceType::Curiosity, 2.5f);
 
     // Setup default echo interactions
-    EchoInteractions.Add(EEchoType::Divine, 1.5f);
-    EchoInteractions.Add(EEchoType::Corrupted, 1.8f);
-    EchoInteractions.Add(EEchoType::Warped, 2.0f);
+    EchoInteractions.Add(EEchoType::Divine, 3.0f);
+    EchoInteractions.Add(EEchoType::Corrupted, 2.0f);
+    EchoInteractions.Add(EEchoType::Warped, 2.5f);
 }
 
 void AShemHaMephorashSeverance::Tick(float DeltaTime)
@@ -38,7 +38,17 @@ void AShemHaMephorashSeverance::Tick(float DeltaTime)
     if (bIsActive)
     {
         UpdateSeveranceState(DeltaTime);
-        CheckTargetValidity();
+        if (CurrentTarget)
+        {
+            if (!CheckTargetValidity(CurrentTarget))
+            {
+                DeactivateSeverance();
+            }
+            else
+            {
+                ModifyReality(CurrentTarget, DeltaTime);
+            }
+        }
     }
 }
 
@@ -51,17 +61,17 @@ void AShemHaMephorashSeverance::InitializeSeverance(ESeveranceType SeveranceType
     // Adjust properties based on severance type
     switch (SeveranceType)
     {
-        case ESeveranceType::NameSeverance:
-            ResonanceModifiers[EResonanceType::Faith] = 2.0f;
-            EchoInteractions[EEchoType::Divine] = 2.2f;
+        case ESeveranceType::NameOfCreation:
+            ResonanceModifiers[EResonanceType::Faith] = 3.5f;
+            EchoInteractions[EEchoType::Divine] = 3.5f;
             break;
-        case ESeveranceType::DivineCut:
-            ResonanceModifiers[EResonanceType::Doubt] = 2.0f;
-            EchoInteractions[EEchoType::Corrupted] = 2.2f;
+        case ESeveranceType::NameOfDestruction:
+            ResonanceModifiers[EResonanceType::Doubt] = 3.0f;
+            EchoInteractions[EEchoType::Corrupted] = 3.0f;
             break;
-        case ESeveranceType::SacredRending:
-            ResonanceModifiers[EResonanceType::Curiosity] = 2.5f;
-            EchoInteractions[EEchoType::Warped] = 2.5f;
+        case ESeveranceType::NameOfBalance:
+            ResonanceModifiers[EResonanceType::Curiosity] = 3.2f;
+            EchoInteractions[EEchoType::Warped] = 3.2f;
             break;
     }
 }
@@ -80,28 +90,19 @@ void AShemHaMephorashSeverance::DeactivateSeverance()
     if (bIsActive)
     {
         bIsActive = false;
-        OnSeveranceDeactivated();
         CurrentTarget = nullptr;
+        OnSeveranceDeactivated();
     }
 }
 
-void AShemHaMephorashSeverance::TargetSeverance(AActor* Target)
+void AShemHaMephorashSeverance::SeverTarget(AActor* Target)
 {
-    if (!Target || !bIsActive) return;
+    if (!Target || !CheckTargetValidity(Target)) return;
 
-    // Check if target is in range
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (OwnerCharacter)
-    {
-        float Distance = FVector::Distance(OwnerCharacter->GetActorLocation(), Target->GetActorLocation());
-        if (Distance <= SeveranceRange)
-        {
-            CurrentTarget = Target;
-            float SeveranceStrength = CalculateSeveranceStrength(Target);
-            OnTargetSevered(Target, SeveranceStrength);
-            ApplySeveranceEffects(Target);
-        }
-    }
+    CurrentTarget = Target;
+    float SeveranceStrength = CalculateSeveranceStrength(Target);
+    ApplySeveranceEffects(Target);
+    OnTargetSevered(Target, SeveranceStrength);
 }
 
 void AShemHaMephorashSeverance::ApplySeveranceEffects(AActor* Target)
@@ -114,34 +115,28 @@ void AShemHaMephorashSeverance::ApplySeveranceEffects(AActor* Target)
 
         switch (CurrentSeveranceType)
         {
-            case ESeveranceType::NameSeverance:
-                // Apply divine name severance effects
-                UGameplayStatics::ApplyDamage(Target, SeverancePower * 0.2f, nullptr, this, nullptr);
-                // Apply divine name effect (to be implemented in character class)
-                break;
-
-            case ESeveranceType::DivineCut:
-                // Apply divine cut effects
-                UGameplayStatics::ApplyDamage(Target, SeverancePower * 0.3f, nullptr, this, nullptr);
+            case ESeveranceType::NameOfCreation:
+                // Apply creation effects (healing and enhancement)
                 if (Character->GetCharacterMovement())
                 {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.7f;
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.2f; // Speed boost
                 }
                 break;
 
-            case ESeveranceType::SacredRending:
-                // Apply sacred rending effects
-                if (SeveranceStrength > 0.8f)
+            case ESeveranceType::NameOfDestruction:
+                // Apply destruction effects (damage and weakening)
+                if (Character->GetCharacterMovement())
                 {
-                    // Strong severance, apply heavy damage
-                    UGameplayStatics::ApplyDamage(Target, SeverancePower * 0.4f, nullptr, this, nullptr);
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.8f; // Speed reduction
                 }
-                else
+                break;
+
+            case ESeveranceType::NameOfBalance:
+                // Apply balance effects (stabilization and harmony)
+                if (Character->GetCharacterMovement())
                 {
-                    // Weak severance, apply moderate damage
-                    UGameplayStatics::ApplyDamage(Target, SeverancePower * 0.2f, nullptr, this, nullptr);
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.0f; // Maintain speed
                 }
-                // Apply sacred rending effect (to be implemented in character class)
                 break;
         }
     }
@@ -149,15 +144,54 @@ void AShemHaMephorashSeverance::ApplySeveranceEffects(AActor* Target)
 
 float AShemHaMephorashSeverance::CalculateSeveranceStrength(AActor* Target)
 {
-    // This is a placeholder for a more complex severance strength calculation
-    // In a real implementation, this would consider various factors like:
-    // - Target's divine connection strength
-    // - Target's resonance levels
-    // - Target's echo interactions
-    // - Environmental divine energy
+    if (!Target) return 0.0f;
 
-    // For now, return a random value between 0 and 1
-    return FMath::RandRange(0.0f, 1.0f);
+    // Calculate base strength based on distance
+    float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+    float DistanceFactor = FMath::Clamp(1.0f - (Distance / SeveranceRange), 0.0f, 1.0f);
+
+    // Apply severance type modifier
+    float TypeModifier = 1.0f;
+    switch (CurrentSeveranceType)
+    {
+        case ESeveranceType::NameOfCreation:
+            TypeModifier = 1.4f;
+            break;
+        case ESeveranceType::NameOfDestruction:
+            TypeModifier = 1.6f;
+            break;
+        case ESeveranceType::NameOfBalance:
+            TypeModifier = 1.2f;
+            break;
+    }
+
+    return SeverancePower * DistanceFactor * TypeModifier;
+}
+
+void AShemHaMephorashSeverance::ModifyReality(AActor* Target, float DeltaTime)
+{
+    if (!Target) return;
+
+    float SeveranceStrength = CalculateSeveranceStrength(Target);
+    float EffectAmount = SeveranceStrength * DeltaTime;
+
+    switch (CurrentSeveranceType)
+    {
+        case ESeveranceType::NameOfCreation:
+            // Apply creation effects over time
+            UGameplayStatics::ApplyDamage(Target, -EffectAmount, nullptr, this, nullptr);
+            break;
+
+        case ESeveranceType::NameOfDestruction:
+            // Apply destruction effects over time
+            UGameplayStatics::ApplyDamage(Target, EffectAmount, nullptr, this, nullptr);
+            break;
+
+        case ESeveranceType::NameOfBalance:
+            // Apply balance effects over time
+            UGameplayStatics::ApplyDamage(Target, -EffectAmount * 0.5f, nullptr, this, nullptr);
+            break;
+    }
 }
 
 void AShemHaMephorashSeverance::GenerateResonance()
@@ -198,29 +232,18 @@ void AShemHaMephorashSeverance::UpdateSeveranceState(float DeltaTime)
     GenerateResonance();
     HandleEchoInteractions();
 
-    // Apply effects to current target
-    if (CurrentTarget)
+    // Apply effects to current target if valid
+    if (CurrentTarget && CheckTargetValidity(CurrentTarget))
     {
         ApplySeveranceEffects(CurrentTarget);
     }
 }
 
-void AShemHaMephorashSeverance::CheckTargetValidity()
+bool AShemHaMephorashSeverance::CheckTargetValidity(AActor* Target)
 {
-    if (!CurrentTarget || CurrentTarget->IsPendingKill())
-    {
-        CurrentTarget = nullptr;
-        return;
-    }
+    if (!Target || Target->IsPendingKill()) return false;
 
-    // Check if target is still in range
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (OwnerCharacter)
-    {
-        float Distance = FVector::Distance(OwnerCharacter->GetActorLocation(), CurrentTarget->GetActorLocation());
-        if (Distance > SeveranceRange)
-        {
-            CurrentTarget = nullptr;
-        }
-    }
+    // Check if target is within range
+    float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+    return Distance <= SeveranceRange;
 } 

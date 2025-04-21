@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class ESealType : uint8
 {
-    Thaumiel UMETA(DisplayName = "Thaumiel"),
-    Gamaliel UMETA(DisplayName = "Gamaliel"),
-    Samael UMETA(DisplayName = "Samael")
+    Containment UMETA(DisplayName = "Containment"),
+    Purification UMETA(DisplayName = "Purification"),
+    Transformation UMETA(DisplayName = "Transformation")
 };
 
 UCLASS()
@@ -65,6 +65,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Seal Properties")
     FVector SealLocation;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Seal Properties")
+    TArray<AActor*> SealedActors;
+
     UFUNCTION(BlueprintImplementableEvent, Category = "Seal Effects")
     void OnSealActivated();
 
@@ -72,13 +75,14 @@ protected:
     void OnSealDeactivated();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Seal Effects")
-    void OnSealPlaced(FVector Location, float SealStrength);
+    void OnActorSealed(AActor* Actor, float SealStrength);
 
 private:
-    void ApplySealEffects(AActor* Target);
+    void ApplySealEffects(AActor* Actor);
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateSealState(float DeltaTime);
-    void CheckAffectedActors();
-    float CalculateSealStrength(AActor* Target);
+    void CheckSealedActors();
+    float CalculateSealStrength(AActor* Actor);
+    void ProcessSealedActors(float DeltaTime);
 }; 

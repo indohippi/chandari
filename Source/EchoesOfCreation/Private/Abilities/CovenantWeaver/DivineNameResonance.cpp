@@ -8,7 +8,8 @@ ADivineNameResonance::ADivineNameResonance()
 {
     PrimaryActorTick.bCanEverTick = true;
     bIsActive = false;
-    ResonanceLocation = FVector::ZeroVector;
+    CurrentTarget = nullptr;
+    ResonanceRange = 1000.0f;
 }
 
 void ADivineNameResonance::BeginPlay()
@@ -16,19 +17,18 @@ void ADivineNameResonance::BeginPlay()
     Super::BeginPlay();
 
     // Initialize default values
-    ResonanceRadius = 400.0f;
-    ResonanceGenerationRate = 2.0f;
+    ResonanceGenerationRate = 3.0f;
     bIsActive = false;
 
     // Setup default resonance modifiers
-    ResonanceModifiers.Add(EResonanceType::Faith, 1.5f);
-    ResonanceModifiers.Add(EResonanceType::Doubt, 1.2f);
-    ResonanceModifiers.Add(EResonanceType::Curiosity, 1.8f);
+    ResonanceModifiers.Add(EResonanceType::Faith, 3.5f);
+    ResonanceModifiers.Add(EResonanceType::Doubt, 1.5f);
+    ResonanceModifiers.Add(EResonanceType::Curiosity, 2.5f);
 
     // Setup default echo interactions
-    EchoInteractions.Add(EEchoType::Divine, 2.0f);
-    EchoInteractions.Add(EEchoType::Corrupted, 1.5f);
-    EchoInteractions.Add(EEchoType::Warped, 2.2f);
+    EchoInteractions.Add(EEchoType::Divine, 4.0f);
+    EchoInteractions.Add(EEchoType::Corrupted, 1.0f);
+    EchoInteractions.Add(EEchoType::Warped, 2.0f);
 }
 
 void ADivineNameResonance::Tick(float DeltaTime)
@@ -38,30 +38,40 @@ void ADivineNameResonance::Tick(float DeltaTime)
     if (bIsActive)
     {
         UpdateResonanceState(DeltaTime);
-        CheckAffectedActors();
+        if (CurrentTarget)
+        {
+            if (!CheckTargetValidity(CurrentTarget))
+            {
+                DeactivateResonance();
+            }
+            else
+            {
+                AmplifyDivineName(CurrentTarget, DeltaTime);
+            }
+        }
     }
 }
 
-void ADivineNameResonance::InitializeResonance(EResonanceType NameType, float BasePower, float Duration)
+void ADivineNameResonance::InitializeResonance(EResonanceType ResonanceType, float BasePower, float Duration)
 {
-    CurrentNameType = NameType;
+    CurrentResonanceType = ResonanceType;
     ResonancePower = BasePower;
     ResonanceDuration = Duration;
 
-    // Adjust properties based on name type
-    switch (NameType)
+    // Adjust properties based on resonance type
+    switch (ResonanceType)
     {
-        case EResonanceType::Tetragrammaton:
-            ResonanceModifiers[EResonanceType::Faith] = 2.5f;
-            EchoInteractions[EEchoType::Divine] = 2.8f;
+        case EResonanceType::Divine:
+            ResonanceModifiers[EResonanceType::Faith] = 4.0f;
+            EchoInteractions[EEchoType::Divine] = 4.5f;
             break;
-        case EResonanceType::Elohim:
-            ResonanceModifiers[EResonanceType::Doubt] = 2.5f;
-            EchoInteractions[EEchoType::Corrupted] = 2.8f;
+        case EResonanceType::Celestial:
+            ResonanceModifiers[EResonanceType::Curiosity] = 3.5f;
+            EchoInteractions[EEchoType::Warped] = 3.0f;
             break;
-        case EResonanceType::ShemHaMephorash:
-            ResonanceModifiers[EResonanceType::Curiosity] = 3.0f;
-            EchoInteractions[EEchoType::Warped] = 3.2f;
+        case EResonanceType::Sacred:
+            ResonanceModifiers[EResonanceType::Doubt] = 2.0f;
+            EchoInteractions[EEchoType::Corrupted] = 2.5f;
             break;
     }
 }
@@ -80,19 +90,19 @@ void ADivineNameResonance::DeactivateResonance()
     if (bIsActive)
     {
         bIsActive = false;
+        CurrentTarget = nullptr;
         OnResonanceDeactivated();
-        ResonanceLocation = FVector::ZeroVector;
     }
 }
 
-void ADivineNameResonance::ChannelResonance(FVector Location)
+void ADivineNameResonance::TargetResonance(AActor* Target)
 {
-    if (!bIsActive) return;
+    if (!Target || !CheckTargetValidity(Target)) return;
 
-    ResonanceLocation = Location;
-    float ResonanceStrength = CalculateResonanceStrength(nullptr);
-    OnResonanceChanneled(Location, ResonanceStrength);
-    CheckAffectedActors();
+    CurrentTarget = Target;
+    float ResonanceStrength = CalculateResonanceStrength(Target);
+    ApplyResonanceEffects(Target);
+    OnTargetResonated(Target, ResonanceStrength);
 }
 
 void ADivineNameResonance::ApplyResonanceEffects(AActor* Target)
@@ -103,39 +113,30 @@ void ADivineNameResonance::ApplyResonanceEffects(AActor* Target)
     {
         float ResonanceStrength = CalculateResonanceStrength(Target);
 
-        switch (CurrentNameType)
+        switch (CurrentResonanceType)
         {
-            case EResonanceType::Tetragrammaton:
-                // Apply Tetragrammaton effects
-                UGameplayStatics::ApplyDamage(Target, -ResonancePower * 0.15f, nullptr, this, nullptr);
+            case EResonanceType::Divine:
+                // Apply divine effects (enhancement and protection)
                 if (Character->GetCharacterMovement())
                 {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.2f;
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.3f; // Speed boost
                 }
                 break;
 
-            case EResonanceType::Elohim:
-                // Apply Elohim effects
-                UGameplayStatics::ApplyDamage(Target, ResonancePower * 0.2f, nullptr, this, nullptr);
+            case EResonanceType::Celestial:
+                // Apply celestial effects (balance and harmony)
                 if (Character->GetCharacterMovement())
                 {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.8f;
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.1f; // Moderate speed boost
                 }
                 break;
 
-            case EResonanceType::ShemHaMephorash:
-                // Apply Shem HaMephorash effects
-                if (ResonanceStrength > 0.7f)
+            case EResonanceType::Sacred:
+                // Apply sacred effects (purification and cleansing)
+                if (Character->GetCharacterMovement())
                 {
-                    // Strong resonance, apply healing
-                    UGameplayStatics::ApplyDamage(Target, -ResonancePower * 0.1f, nullptr, this, nullptr);
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.9f; // Speed reduction
                 }
-                else
-                {
-                    // Weak resonance, apply damage
-                    UGameplayStatics::ApplyDamage(Target, ResonancePower * 0.1f, nullptr, this, nullptr);
-                }
-                // Apply Shem HaMephorash effect (to be implemented in character class)
                 break;
         }
     }
@@ -143,16 +144,54 @@ void ADivineNameResonance::ApplyResonanceEffects(AActor* Target)
 
 float ADivineNameResonance::CalculateResonanceStrength(AActor* Target)
 {
-    // This is a placeholder for a more complex resonance strength calculation
-    // In a real implementation, this would consider various factors like:
-    // - Target's divine connection strength
-    // - Target's resonance levels
-    // - Target's echo interactions
-    // - Environmental divine energy
-    // - Distance from resonance center
+    if (!Target) return 0.0f;
 
-    // For now, return a random value between 0 and 1
-    return FMath::RandRange(0.0f, 1.0f);
+    // Calculate base strength based on distance
+    float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+    float DistanceFactor = FMath::Clamp(1.0f - (Distance / ResonanceRange), 0.0f, 1.0f);
+
+    // Apply resonance type modifier
+    float TypeModifier = 1.0f;
+    switch (CurrentResonanceType)
+    {
+        case EResonanceType::Divine:
+            TypeModifier = 1.5f;
+            break;
+        case EResonanceType::Celestial:
+            TypeModifier = 1.3f;
+            break;
+        case EResonanceType::Sacred:
+            TypeModifier = 1.2f;
+            break;
+    }
+
+    return ResonancePower * DistanceFactor * TypeModifier;
+}
+
+void ADivineNameResonance::AmplifyDivineName(AActor* Target, float DeltaTime)
+{
+    if (!Target) return;
+
+    float ResonanceStrength = CalculateResonanceStrength(Target);
+    float EffectAmount = ResonanceStrength * DeltaTime;
+
+    switch (CurrentResonanceType)
+    {
+        case EResonanceType::Divine:
+            // Apply divine amplification effects over time
+            UGameplayStatics::ApplyDamage(Target, -EffectAmount, nullptr, this, nullptr);
+            break;
+
+        case EResonanceType::Celestial:
+            // Apply celestial amplification effects over time
+            UGameplayStatics::ApplyDamage(Target, -EffectAmount * 0.7f, nullptr, this, nullptr);
+            break;
+
+        case EResonanceType::Sacred:
+            // Apply sacred amplification effects over time
+            UGameplayStatics::ApplyDamage(Target, EffectAmount * 0.5f, nullptr, this, nullptr);
+            break;
+    }
 }
 
 void ADivineNameResonance::GenerateResonance()
@@ -193,24 +232,18 @@ void ADivineNameResonance::UpdateResonanceState(float DeltaTime)
     GenerateResonance();
     HandleEchoInteractions();
 
-    // Apply effects to affected actors
-    CheckAffectedActors();
+    // Apply effects to current target if valid
+    if (CurrentTarget && CheckTargetValidity(CurrentTarget))
+    {
+        ApplyResonanceEffects(CurrentTarget);
+    }
 }
 
-void ADivineNameResonance::CheckAffectedActors()
+bool ADivineNameResonance::CheckTargetValidity(AActor* Target)
 {
-    if (!bIsActive || ResonanceLocation == FVector::ZeroVector) return;
+    if (!Target || Target->IsPendingKill()) return false;
 
-    // Find all actors in range
-    TArray<AActor*> ActorsInRange;
-    UGameplayStatics::GetAllActorsInRadius(this, ResonanceLocation, ResonanceRadius, ActorsInRange);
-
-    // Apply effects to each actor
-    for (AActor* Actor : ActorsInRange)
-    {
-        if (Actor && !Actor->IsPendingKill())
-        {
-            ApplyResonanceEffects(Actor);
-        }
-    }
+    // Check if target is within range
+    float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+    return Distance <= ResonanceRange;
 } 

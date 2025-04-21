@@ -79,6 +79,7 @@ private:
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateTransmutationState(float DeltaTime);
-    void CheckTargetValidity();
+    bool CheckTargetValidity(AActor* Target);
     float CalculateTransmutationStrength(AActor* Target);
+    void TransformMatter(AActor* Target, float DeltaTime);
 }; 

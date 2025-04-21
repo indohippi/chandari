@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class EResonanceType : uint8
 {
-    Tetragrammaton UMETA(DisplayName = "Tetragrammaton"),
-    Elohim UMETA(DisplayName = "Elohim"),
-    ShemHaMephorash UMETA(DisplayName = "Shem HaMephorash")
+    Divine UMETA(DisplayName = "Divine"),
+    Celestial UMETA(DisplayName = "Celestial"),
+    Sacred UMETA(DisplayName = "Sacred")
 };
 
 UCLASS()
@@ -26,7 +26,7 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void InitializeResonance(EResonanceType NameType, float BasePower, float Duration);
+    void InitializeResonance(EResonanceType ResonanceType, float BasePower, float Duration);
 
     UFUNCTION(BlueprintCallable, Category = "Abilities")
     void ActivateResonance();
@@ -35,11 +35,11 @@ public:
     void DeactivateResonance();
 
     UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void ChannelResonance(FVector Location);
+    void TargetResonance(AActor* Target);
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resonance Properties")
-    EResonanceType CurrentNameType;
+    EResonanceType CurrentResonanceType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resonance Properties")
     float ResonancePower;
@@ -48,7 +48,7 @@ protected:
     float ResonanceDuration;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resonance Properties")
-    float ResonanceRadius;
+    float ResonanceRange;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resonance Properties")
     float ResonanceGenerationRate;
@@ -63,7 +63,7 @@ protected:
     bool bIsActive;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resonance Properties")
-    FVector ResonanceLocation;
+    AActor* CurrentTarget;
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Resonance Effects")
     void OnResonanceActivated();
@@ -72,13 +72,14 @@ protected:
     void OnResonanceDeactivated();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Resonance Effects")
-    void OnResonanceChanneled(FVector Location, float ResonanceStrength);
+    void OnTargetResonated(AActor* Target, float ResonanceStrength);
 
 private:
     void ApplyResonanceEffects(AActor* Target);
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateResonanceState(float DeltaTime);
-    void CheckAffectedActors();
+    bool CheckTargetValidity(AActor* Target);
     float CalculateResonanceStrength(AActor* Target);
+    void AmplifyDivineName(AActor* Target, float DeltaTime);
 }; 
