@@ -41,3 +41,4 @@ Five core classes representing different aspects of the original order:
 - **Resonance Types**: Faith, Doubt, and Curiosity
 - **Echo Interaction**: Distortion, Manifestation, and Corruption
 - **Player Progression**: Focus on managing Resonance rather than traditional leveling # chandari
+# chandari
