@@ -6,12 +6,21 @@
 #include "EchoTypes.h"
 #include "GoldenAge.generated.h"
 
+class USphereComponent;
+class UNiagaraSystem;
+class UNiagaraComponent;
+class UMaterialInterface;
+class UMaterialInstanceDynamic;
+class UPostProcessComponent;
+class ACharacter;
+
 UENUM(BlueprintType)
-enum class EAgeType : uint8
+enum class EGoldenAgeType : uint8
 {
-    Harmony UMETA(DisplayName = "Harmony"),
-    Prosperity UMETA(DisplayName = "Prosperity"),
-    Perfection UMETA(DisplayName = "Perfection")
+    Enlightenment UMETA(DisplayName = "Enlightenment"),
+    Harmony      UMETA(DisplayName = "Harmony"),
+    Prosperity   UMETA(DisplayName = "Prosperity"),
+    Transcendence UMETA(DisplayName = "Transcendence")
 };
 
 UCLASS()
@@ -22,64 +31,107 @@ class ECHOESOFCREATION_API AGoldenAge : public AActor
 public:
     AGoldenAge();
 
-    virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
 
-    UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void InitializeAge(EAgeType AgeType, float BasePower, float Duration);
+    UFUNCTION(BlueprintCallable, Category = "Golden Age")
+    void InitializeGoldenAge(EGoldenAgeType AgeType, float BasePower, float Duration);
 
-    UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void ActivateAge();
+    UFUNCTION(BlueprintCallable, Category = "Golden Age")
+    void ActivateGoldenAge();
 
-    UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void DeactivateAge();
-
-    UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void SetAgeRadius(float Radius);
+    UFUNCTION(BlueprintCallable, Category = "Golden Age")
+    void DeactivateGoldenAge();
 
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    EAgeType CurrentAgeType;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USphereComponent* EnlightenmentSphere;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    float AgePower;
+    // Visual Effects
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual Effects")
+    UNiagaraSystem* AuraEffect;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    float AgeDuration;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual Effects")
+    UNiagaraSystem* SymbolsEffect;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    float AgeRadius;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual Effects")
+    UNiagaraSystem* GroundEffect;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual Effects")
+    UNiagaraSystem* AffectedCharacterEffect;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual Effects")
+    UMaterialInterface* PostProcessMaterial;
+
+    // Effect Components
+    UPROPERTY()
+    UNiagaraComponent* AuraComponent;
+
+    UPROPERTY()
+    UNiagaraComponent* SymbolsComponent;
+
+    UPROPERTY()
+    UNiagaraComponent* GroundComponent;
+
+    UPROPERTY()
+    UPostProcessComponent* PostProcessComponent;
+
+    UPROPERTY()
+    UMaterialInstanceDynamic* PostProcessInstance;
+
+    // Map to track affected character effects
+    UPROPERTY()
+    TMap<ACharacter*, UNiagaraComponent*> AffectedCharacterEffects;
+
+    // Properties
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golden Age")
+    float EnlightenmentRange;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golden Age")
+    float WisdomPower;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golden Age")
+    float HarmonyFactor;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golden Age")
     float ResonanceGenerationRate;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    TMap<EResonanceType, float> ResonanceModifiers;
+    UPROPERTY()
+    float AgeDuration;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    TMap<EEchoType, float> EchoInteractions;
+    UPROPERTY()
+    float OriginalTimeScale;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
+    UPROPERTY()
     bool bIsActive;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Age Properties")
-    TArray<AActor*> AffectedActors;
+    UPROPERTY()
+    EGoldenAgeType CurrentAgeType;
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Age Effects")
-    void OnAgeActivated();
+    // Resonance and Echo interactions
+    UPROPERTY()
+    TMap<EResonanceType, float> ResonanceModifiers;
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Age Effects")
-    void OnAgeDeactivated();
+    UPROPERTY()
+    TMap<EEchoType, float> EchoInteractions;
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Age Effects")
-    void OnActorAffected(AActor* Actor, float HarmonyStrength);
+    // Blueprint events
+    UFUNCTION(BlueprintImplementableEvent, Category = "Golden Age")
+    void OnGoldenAgeActivated();
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Golden Age")
+    void OnGoldenAgeDeactivated();
 
 private:
-    void ApplyAgeEffects(AActor* Target);
+    void UpdateGoldenAgeState(float DeltaTime);
+    void ApplyEnlightenmentEffects(float DeltaTime);
+    void ApplyAgeEffects(ACharacter* Target, float Strength, float DeltaTime);
+    float CalculateEnlightenmentStrength(AActor* Target);
     void GenerateResonance();
     void HandleEchoInteractions();
-    void UpdateAgeState(float DeltaTime);
-    void CheckAffectedActors();
-    float CalculateHarmonyStrength(AActor* Target);
-    void FindActorsInRadius();
+
+    // Visual effect functions
+    void SpawnManifestationEffects();
+    void UpdateManifestationEffects(float DeltaTime);
+    void CleanupManifestationEffects();
 }; 

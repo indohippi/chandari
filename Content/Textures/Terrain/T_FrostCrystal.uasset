@@ -1,0 +1,65 @@
+{
+    "Type": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Default",
+        "Filter": "TF_Trilinear",
+        "LODGroup": "TEXTUREGROUP_Particles",
+        "MipGenSettings": "TMGS_FromTextureGroup",
+        "Source": {
+            "Format": "PF_R8G8B8A8",
+            "SizeX": 256,
+            "SizeY": 256,
+            "NumMips": 1,
+            "NumSlices": 1,
+            "Data": {
+                "Type": "Procedural",
+                "Generator": {
+                    "Type": "Gradient",
+                    "Properties": {
+                        "GradientType": "Radial",
+                        "Colors": [
+                            {
+                                "Position": 0.0,
+                                "Color": {
+                                    "R": 0.2,
+                                    "G": 0.8,
+                                    "B": 1.0,
+                                    "A": 1.0
+                                }
+                            },
+                            {
+                                "Position": 0.5,
+                                "Color": {
+                                    "R": 0.0,
+                                    "G": 0.4,
+                                    "B": 0.8,
+                                    "A": 0.8
+                                }
+                            },
+                            {
+                                "Position": 1.0,
+                                "Color": {
+                                    "R": 0.0,
+                                    "G": 0.0,
+                                    "B": 0.0,
+                                    "A": 0.0
+                                }
+                            }
+                        ],
+                        "Noise": {
+                            "Type": "Perlin",
+                            "Scale": 0.05,
+                            "Intensity": 0.3,
+                            "Octaves": 4
+                        },
+                        "Pattern": {
+                            "Type": "Crystalline",
+                            "Strength": 0.4,
+                            "Frequency": 6.0
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

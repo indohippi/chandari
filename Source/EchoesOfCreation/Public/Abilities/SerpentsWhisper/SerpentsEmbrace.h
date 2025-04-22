@@ -9,9 +9,19 @@
 UENUM(BlueprintType)
 enum class EEmbraceType : uint8
 {
-    CreationCoil UMETA(DisplayName = "Creation Coil"),
-    DestructionFang UMETA(DisplayName = "Destruction Fang"),
-    EternalCycle UMETA(DisplayName = "Eternal Cycle")
+    Constriction UMETA(DisplayName = "Constriction"),
+    Envelopment UMETA(DisplayName = "Envelopment"),
+    Absorption UMETA(DisplayName = "Absorption")
+};
+
+USTRUCT()
+struct FConstrictedTargetData
+{
+    GENERATED_BODY()
+
+    float OriginalMaxSpeed;
+    float ConstrictionTime;
+    float ConstrictionStrength;
 };
 
 UCLASS()
@@ -34,15 +44,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Abilities")
     void DeactivateEmbrace();
 
-    UFUNCTION(BlueprintCallable, Category = "Abilities")
-    void TargetEmbrace(AActor* Target);
-
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
     EEmbraceType CurrentEmbraceType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
-    float EmbracePower;
+    float ConstrictionPower;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
     float EmbraceDuration;
@@ -54,6 +61,9 @@ protected:
     float ResonanceGenerationRate;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
+    int32 MaxTargets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
     TMap<EResonanceType, float> ResonanceModifiers;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
@@ -63,7 +73,7 @@ protected:
     bool bIsActive;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Embrace Properties")
-    AActor* CurrentTarget;
+    TMap<AActor*, FConstrictedTargetData> ConstrictedTargets;
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Embrace Effects")
     void OnEmbraceActivated();
@@ -72,12 +82,22 @@ protected:
     void OnEmbraceDeactivated();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Embrace Effects")
-    void OnTargetEmbraced(AActor* Target);
+    void OnTargetConstricted(AActor* Target, float ConstrictionStrength);
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Embrace Effects")
+    void OnTargetReleased(AActor* Target);
 
 private:
-    void ApplyEmbraceEffects(AActor* Target);
+    void FindTargetsInRange();
+    bool CanConstrictTarget(AActor* Target);
+    void ConstrictTarget(AActor* Target);
+    void ReleaseTarget(AActor* Target);
+    void ApplyConstrictionEffects(float DeltaTime);
+    void ApplyConstrictionDamage(class ACharacter* Target, float Strength, float DeltaTime);
+    void ApplyEnvelopmentEffects(class ACharacter* Target, float Strength, float DeltaTime);
+    void ApplyAbsorptionEffects(class ACharacter* Target, float Strength, float DeltaTime);
+    float CalculateConstrictionStrength(AActor* Target);
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateEmbraceState(float DeltaTime);
-    void CheckTargetValidity();
 }; 

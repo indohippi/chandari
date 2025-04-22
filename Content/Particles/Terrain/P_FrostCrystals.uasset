@@ -1,0 +1,150 @@
+{
+    "Type": "ParticleSystem",
+    "Properties": {
+        "Emitter": {
+            "Name": "FrostCrystals",
+            "SpawnRate": 40.0,
+            "MaxDrawCount": 800,
+            "SimulationSpace": "World",
+            "ParticleLifetime": {
+                "Min": 1.5,
+                "Max": 3.0
+            },
+            "ParticleSize": {
+                "Min": 3.0,
+                "Max": 12.0
+            },
+            "ParticleColor": {
+                "Start": {
+                    "R": 0.2,
+                    "G": 0.8,
+                    "B": 1.0,
+                    "A": 1.0
+                },
+                "End": {
+                    "R": 0.0,
+                    "G": 0.4,
+                    "B": 0.8,
+                    "A": 0.0
+                }
+            },
+            "ParticleVelocity": {
+                "Min": {
+                    "X": -50.0,
+                    "Y": -50.0,
+                    "Z": 20.0
+                },
+                "Max": {
+                    "X": 50.0,
+                    "Y": 50.0,
+                    "Z": 100.0
+                }
+            },
+            "ParticleAcceleration": {
+                "X": 0.0,
+                "Y": 0.0,
+                "Z": -100.0
+            },
+            "ParticleRotation": {
+                "Min": 0.0,
+                "Max": 360.0
+            },
+            "ParticleRotationRate": {
+                "Min": -45.0,
+                "Max": 45.0
+            },
+            "ParticleMaterial": "/Game/Materials/Terrain/M_FrostCrystal",
+            "ParticleBlendMode": "Translucent",
+            "ParticleSortMode": "PSORTMODE_ViewProjDepth",
+            "ParticleSubUV": {
+                "Enabled": true,
+                "SubUVSize": {
+                    "X": 3,
+                    "Y": 3
+                },
+                "SubUVInterpMethod": "Random"
+            },
+            "ParticleLighting": {
+                "Enabled": true,
+                "LightingEnabled": true,
+                "LightingInfluence": 0.7
+            },
+            "ParticleCollision": {
+                "Enabled": true,
+                "CollisionMode": "Freeze",
+                "BounceFactor": 0.1,
+                "FrictionFactor": 0.2
+            },
+            "ParticleTrails": {
+                "Enabled": true,
+                "TrailLength": 0.3,
+                "TrailColor": {
+                    "Start": {
+                        "R": 0.2,
+                        "G": 0.6,
+                        "B": 0.8,
+                        "A": 0.6
+                    },
+                    "End": {
+                        "R": 0.0,
+                        "G": 0.2,
+                        "B": 0.4,
+                        "A": 0.0
+                    }
+                }
+            }
+        },
+        "Modules": [
+            {
+                "Type": "SizeOverLife",
+                "Properties": {
+                    "SizeCurve": {
+                        "Points": [
+                            {"Time": 0.0, "Value": 0.5},
+                            {"Time": 0.3, "Value": 1.0},
+                            {"Time": 0.8, "Value": 1.0},
+                            {"Time": 1.0, "Value": 0.0}
+                        ]
+                    }
+                }
+            },
+            {
+                "Type": "ColorOverLife",
+                "Properties": {
+                    "ColorCurve": {
+                        "Points": [
+                            {"Time": 0.0, "Value": 0.0},
+                            {"Time": 0.2, "Value": 1.0},
+                            {"Time": 0.8, "Value": 0.8},
+                            {"Time": 1.0, "Value": 0.0}
+                        ]
+                    }
+                }
+            },
+            {
+                "Type": "VelocityOverLife",
+                "Properties": {
+                    "VelocityCurve": {
+                        "Points": [
+                            {"Time": 0.0, "Value": 1.0},
+                            {"Time": 0.3, "Value": 0.3},
+                            {"Time": 1.0, "Value": 0.0}
+                        ]
+                    }
+                }
+            },
+            {
+                "Type": "RotationOverLife",
+                "Properties": {
+                    "RotationCurve": {
+                        "Points": [
+                            {"Time": 0.0, "Value": 1.0},
+                            {"Time": 0.5, "Value": 0.5},
+                            {"Time": 1.0, "Value": 0.0}
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+} 

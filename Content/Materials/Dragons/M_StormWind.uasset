@@ -1,0 +1,65 @@
+{
+    "Class": "Material",
+    "Properties": {
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_Unlit",
+        "TwoSided": true,
+        "MaterialDomain": "MD_Surface",
+        "MaterialAttributes": {
+            "BaseColor": {
+                "Expression": "VectorParameter",
+                "ParameterName": "BaseColor",
+                "DefaultValue": [0.7, 0.7, 1.0, 0.8]
+            },
+            "EmissiveColor": {
+                "Expression": "Multiply",
+                "A": {
+                    "Expression": "VectorParameter",
+                    "ParameterName": "EmissiveColor",
+                    "DefaultValue": [0.7, 0.7, 1.0, 0.8]
+                },
+                "B": {
+                    "Expression": "ScalarParameter",
+                    "ParameterName": "EmissiveIntensity",
+                    "DefaultValue": 2.0
+                }
+            },
+            "Opacity": {
+                "Expression": "Multiply",
+                "A": {
+                    "Expression": "TextureSample",
+                    "Texture": "/Game/Textures/T_WindGradient"
+                },
+                "B": {
+                    "Expression": "ScalarParameter",
+                    "ParameterName": "OpacityScale",
+                    "DefaultValue": 0.6
+                }
+            },
+            "Normal": {
+                "Expression": "Multiply",
+                "A": {
+                    "Expression": "TextureSample",
+                    "Texture": "/Game/Textures/T_AirCurrentNormal"
+                },
+                "B": {
+                    "Expression": "ScalarParameter",
+                    "ParameterName": "NormalIntensity",
+                    "DefaultValue": 0.3
+                }
+            },
+            "WorldPositionOffset": {
+                "Expression": "Multiply",
+                "A": {
+                    "Expression": "TextureSample",
+                    "Texture": "/Game/Textures/T_WindDistortion"
+                },
+                "B": {
+                    "Expression": "ScalarParameter",
+                    "ParameterName": "DistortionStrength",
+                    "DefaultValue": 0.2
+                }
+            }
+        }
+    }
+} 

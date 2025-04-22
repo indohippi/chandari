@@ -1,7 +1,7 @@
 #include "Abilities/SerpentsWhisper/ApophisShadow.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
+#include "Components/CapsuleComponent.h"
 #include "ResonanceManager.h"
 #include "EchoManager.h"
 
@@ -9,6 +9,8 @@ AApophisShadow::AApophisShadow()
 {
     PrimaryActorTick.bCanEverTick = true;
     bIsActive = false;
+    ShadowRange = 800.0f;
+    StealthFactor = 1.0f;
 }
 
 void AApophisShadow::BeginPlay()
@@ -16,19 +18,18 @@ void AApophisShadow::BeginPlay()
     Super::BeginPlay();
 
     // Initialize default values
-    ShadowRadius = 500.0f;
-    ResonanceGenerationRate = 1.2f;
+    ResonanceGenerationRate = 1.5f;
     bIsActive = false;
 
     // Setup default resonance modifiers
-    ResonanceModifiers.Add(EResonanceType::Faith, 0.3f);
-    ResonanceModifiers.Add(EResonanceType::Doubt, 1.5f);
-    ResonanceModifiers.Add(EResonanceType::Curiosity, 0.8f);
+    ResonanceModifiers.Add(EResonanceType::Faith, 1.5f);
+    ResonanceModifiers.Add(EResonanceType::Doubt, 2.5f);
+    ResonanceModifiers.Add(EResonanceType::Curiosity, 2.0f);
 
     // Setup default echo interactions
-    EchoInteractions.Add(EEchoType::Divine, 0.5f);
-    EchoInteractions.Add(EEchoType::Corrupted, 2.0f);
-    EchoInteractions.Add(EEchoType::Warped, 1.5f);
+    EchoInteractions.Add(EEchoType::Divine, 1.5f);
+    EchoInteractions.Add(EEchoType::Corrupted, 2.5f);
+    EchoInteractions.Add(EEchoType::Warped, 2.0f);
 }
 
 void AApophisShadow::Tick(float DeltaTime)
@@ -38,7 +39,7 @@ void AApophisShadow::Tick(float DeltaTime)
     if (bIsActive)
     {
         UpdateShadowState(DeltaTime);
-        CheckAffectedActors();
+        ApplyShadowEffects();
     }
 }
 
@@ -51,17 +52,20 @@ void AApophisShadow::InitializeShadow(EShadowType ShadowType, float BasePower, f
     // Adjust properties based on shadow type
     switch (ShadowType)
     {
-        case EShadowType::CorruptingDarkness:
-            ResonanceModifiers[EResonanceType::Doubt] = 2.0f;
-            EchoInteractions[EEchoType::Corrupted] = 2.5f;
+        case EShadowType::Deception:
+            StealthFactor = 1.2f;
+            ResonanceModifiers[EResonanceType::Doubt] = 3.0f;
+            EchoInteractions[EEchoType::Corrupted] = 2.8f;
             break;
-        case EShadowType::ConsumingVoid:
-            ResonanceModifiers[EResonanceType::Curiosity] = 1.5f;
-            EchoInteractions[EEchoType::Warped] = 2.0f;
+        case EShadowType::Concealment:
+            StealthFactor = 1.5f;
+            ResonanceModifiers[EResonanceType::Faith] = 2.5f;
+            EchoInteractions[EEchoType::Divine] = 2.5f;
             break;
-        case EShadowType::TwistingShadows:
-            ResonanceModifiers[EResonanceType::Faith] = 0.1f;
-            EchoInteractions[EEchoType::Divine] = 0.2f;
+        case EShadowType::Chaos:
+            StealthFactor = 1.3f;
+            ResonanceModifiers[EResonanceType::Curiosity] = 2.8f;
+            EchoInteractions[EEchoType::Warped] = 2.8f;
             break;
     }
 }
@@ -72,7 +76,18 @@ void AApophisShadow::ActivateShadow()
     {
         bIsActive = true;
         OnShadowActivated();
-        CheckAffectedActors();
+        
+        // Apply initial stealth effects
+        if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
+        {
+            // Modify collision and visibility
+            OwnerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+            OwnerCharacter->SetActorHiddenInGame(true);
+            
+            // Store original values for restoration
+            OriginalWalkSpeed = OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed;
+            OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed *= (1.0f + StealthFactor * 0.2f);
+        }
     }
 }
 
@@ -81,44 +96,91 @@ void AApophisShadow::DeactivateShadow()
     if (bIsActive)
     {
         bIsActive = false;
+        
+        // Restore original state
+        if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
+        {
+            OwnerCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+            OwnerCharacter->SetActorHiddenInGame(false);
+            OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalWalkSpeed;
+        }
+        
         OnShadowDeactivated();
     }
 }
 
-void AApophisShadow::ExpandShadow(float ExpansionRate)
+void AApophisShadow::ApplyShadowEffects()
 {
-    ShadowRadius += ExpansionRate;
-    OnShadowExpanded(ShadowRadius);
-}
-
-void AApophisShadow::ApplyShadowEffects(AActor* Target)
-{
-    if (!Target) return;
-
-    if (ACharacter* Character = Cast<ACharacter>(Target))
+    if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
     {
         switch (CurrentShadowType)
         {
-            case EShadowType::CorruptingDarkness:
-                // Apply damage over time and corruption
-                UGameplayStatics::ApplyDamage(Target, ShadowPower * 0.1f, nullptr, this, nullptr);
-                // Apply corruption effect (to be implemented in character class)
+            case EShadowType::Deception:
+                // Create illusory duplicates or misleading effects
+                CreateDeceptionEffects();
                 break;
+                
+            case EShadowType::Concealment:
+                // Enhanced stealth and noise reduction
+                ApplyConcealmentEffects(OwnerCharacter);
+                break;
+                
+            case EShadowType::Chaos:
+                // Disruptive effects on nearby enemies
+                ApplyChaosEffects();
+                break;
+        }
+    }
+}
 
-            case EShadowType::ConsumingVoid:
-                // Apply void damage and movement speed reduction
-                UGameplayStatics::ApplyDamage(Target, ShadowPower * 0.15f, nullptr, this, nullptr);
-                if (Character->GetCharacterMovement())
+void AApophisShadow::CreateDeceptionEffects()
+{
+    // Spawn illusory duplicates at random positions around the player
+    if (FMath::Rand() % 100 < 10) // 10% chance per tick
+    {
+        FVector RandomOffset = FVector(
+            FMath::RandRange(-200.0f, 200.0f),
+            FMath::RandRange(-200.0f, 200.0f),
+            0.0f
+        );
+        
+        FVector SpawnLocation = GetOwner()->GetActorLocation() + RandomOffset;
+        // TODO: Spawn actual illusion actor
+        OnIllusionCreated(SpawnLocation);
+    }
+}
+
+void AApophisShadow::ApplyConcealmentEffects(ACharacter* OwnerCharacter)
+{
+    // Reduce visibility based on movement
+    float MovementFactor = OwnerCharacter->GetVelocity().Size() / OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed;
+    float VisibilityFactor = FMath::Lerp(0.0f, 1.0f, MovementFactor);
+    
+    // Apply visibility changes
+    OwnerCharacter->CustomTimeDilation = FMath::Lerp(0.8f, 1.0f, VisibilityFactor);
+}
+
+void AApophisShadow::ApplyChaosEffects()
+{
+    // Find nearby enemies and apply disruptive effects
+    TArray<AActor*> NearbyActors;
+    UGameplayStatics::GetAllActorsInRadius(this, GetActorLocation(), ShadowRange, NearbyActors);
+    
+    for (AActor* Actor : NearbyActors)
+    {
+        if (Actor != GetOwner() && Cast<ACharacter>(Actor))
+        {
+            // Apply confusion or disorientation effect
+            if (ACharacter* EnemyCharacter = Cast<ACharacter>(Actor))
+            {
+                // Randomly modify their movement
+                if (FMath::Rand() % 100 < 20) // 20% chance per tick
                 {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.7f;
+                    FRotator NewRotation = EnemyCharacter->GetActorRotation();
+                    NewRotation.Yaw += FMath::RandRange(-30.0f, 30.0f);
+                    EnemyCharacter->SetActorRotation(NewRotation);
                 }
-                break;
-
-            case EShadowType::TwistingShadows:
-                // Apply confusion and minor damage
-                UGameplayStatics::ApplyDamage(Target, ShadowPower * 0.05f, nullptr, this, nullptr);
-                // Apply confusion effect (to be implemented in character class)
-                break;
+            }
         }
     }
 }
@@ -160,32 +222,4 @@ void AApophisShadow::UpdateShadowState(float DeltaTime)
     // Generate resonance and handle echo interactions
     GenerateResonance();
     HandleEchoInteractions();
-}
-
-void AApophisShadow::CheckAffectedActors()
-{
-    // Get all actors in the shadow radius
-    TArray<AActor*> OverlappingActors;
-    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-    
-    TArray<AActor*> ActorsToIgnore;
-    ActorsToIgnore.Add(GetOwner());
-
-    // Get all actors in the shadow radius
-    UKismetSystemLibrary::SphereOverlapActors(
-        GetWorld(),
-        GetActorLocation(),
-        ShadowRadius,
-        ObjectTypes,
-        nullptr,
-        ActorsToIgnore,
-        OverlappingActors
-    );
-
-    // Apply effects to all affected actors
-    for (AActor* Actor : OverlappingActors)
-    {
-        ApplyShadowEffects(Actor);
-    }
 } 

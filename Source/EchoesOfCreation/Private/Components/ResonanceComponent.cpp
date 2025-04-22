@@ -32,6 +32,9 @@ void UResonanceComponent::BeginPlay()
 void UResonanceComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    UpdateResonance(DeltaTime);
+    CheckResonanceEffects();
 }
 
 void UResonanceComponent::GenerateResonance(EResonanceType Type, float Intensity, float Duration)
@@ -106,4 +109,101 @@ void UResonanceComponent::HandleResonanceEffect(const FResonanceEffect& Effect)
     {
         // TODO: Apply corruption effects
     }
+}
+
+void UResonanceComponent::AddResonance(EResonanceType Type, float Amount)
+{
+    switch (Type)
+    {
+        case EResonanceType::Faith:
+            ResonanceState.Faith = FMath::Clamp(ResonanceState.Faith + Amount, 0.0f, 100.0f);
+            break;
+        case EResonanceType::Doubt:
+            ResonanceState.Doubt = FMath::Clamp(ResonanceState.Doubt + Amount, 0.0f, 100.0f);
+            break;
+        case EResonanceType::Curiosity:
+            ResonanceState.Curiosity = FMath::Clamp(ResonanceState.Curiosity + Amount, 0.0f, 100.0f);
+            break;
+    }
+
+    UpdateTotalResonance();
+    OnResonanceChanged(Type, GetResonance(Type));
+}
+
+void UResonanceComponent::RemoveResonance(EResonanceType Type, float Amount)
+{
+    AddResonance(Type, -Amount);
+}
+
+float UResonanceComponent::GetResonance(EResonanceType Type) const
+{
+    switch (Type)
+    {
+        case EResonanceType::Faith:
+            return ResonanceState.Faith;
+        case EResonanceType::Doubt:
+            return ResonanceState.Doubt;
+        case EResonanceType::Curiosity:
+            return ResonanceState.Curiosity;
+        default:
+            return 0.0f;
+    }
+}
+
+float UResonanceComponent::GetTotalResonance() const
+{
+    return ResonanceState.TotalResonance;
+}
+
+void UResonanceComponent::UpdateResonance(float DeltaTime)
+{
+    ApplyResonanceDecay(DeltaTime);
+    UpdateTotalResonance();
+}
+
+void UResonanceComponent::CheckResonanceEffects()
+{
+    // Check for manifestation threshold
+    if (ResonanceState.TotalResonance >= ManifestationThreshold)
+    {
+        OnEchoManifestation();
+    }
+
+    // Check for distortion threshold
+    if (ResonanceState.TotalResonance >= DistortionThreshold)
+    {
+        OnEnvironmentDistortion();
+    }
+
+    // Check for corruption threshold
+    if (ResonanceState.TotalResonance >= CorruptionThreshold)
+    {
+        OnCorruption();
+    }
+
+    // Check individual resonance thresholds
+    if (ResonanceState.Faith >= 50.0f)
+    {
+        OnResonanceThresholdReached(EResonanceType::Faith);
+    }
+    if (ResonanceState.Doubt >= 50.0f)
+    {
+        OnResonanceThresholdReached(EResonanceType::Doubt);
+    }
+    if (ResonanceState.Curiosity >= 50.0f)
+    {
+        OnResonanceThresholdReached(EResonanceType::Curiosity);
+    }
+}
+
+void UResonanceComponent::ApplyResonanceDecay(float DeltaTime)
+{
+    ResonanceState.Faith = FMath::Max(0.0f, ResonanceState.Faith - (ResonanceDecayRate * DeltaTime));
+    ResonanceState.Doubt = FMath::Max(0.0f, ResonanceState.Doubt - (ResonanceDecayRate * DeltaTime));
+    ResonanceState.Curiosity = FMath::Max(0.0f, ResonanceState.Curiosity - (ResonanceDecayRate * DeltaTime));
+}
+
+void UResonanceComponent::UpdateTotalResonance()
+{
+    ResonanceState.TotalResonance = (ResonanceState.Faith + ResonanceState.Doubt + ResonanceState.Curiosity) / 3.0f;
 } 

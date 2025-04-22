@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class EShadowType : uint8
 {
-    CorruptingDarkness UMETA(DisplayName = "Corrupting Darkness"),
-    ConsumingVoid UMETA(DisplayName = "Consuming Void"),
-    TwistingShadows UMETA(DisplayName = "Twisting Shadows")
+    Deception UMETA(DisplayName = "Deception"),
+    Concealment UMETA(DisplayName = "Concealment"),
+    Chaos UMETA(DisplayName = "Chaos")
 };
 
 UCLASS()
@@ -48,7 +48,10 @@ protected:
     float ShadowDuration;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shadow Properties")
-    float ShadowRadius;
+    float ShadowRange;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shadow Properties")
+    float StealthFactor;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shadow Properties")
     float ResonanceGenerationRate;
@@ -62,6 +65,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shadow Properties")
     bool bIsActive;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shadow Properties")
+    float OriginalWalkSpeed;
+
     UFUNCTION(BlueprintImplementableEvent, Category = "Shadow Effects")
     void OnShadowActivated();
 
@@ -71,10 +77,16 @@ protected:
     UFUNCTION(BlueprintImplementableEvent, Category = "Shadow Effects")
     void OnShadowExpanded(float NewRadius);
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "Shadow Effects")
+    void OnIllusionCreated(const FVector& Location);
+
 private:
-    void ApplyShadowEffects(AActor* Target);
+    void ApplyShadowEffects();
+    void CreateDeceptionEffects();
+    void ApplyConcealmentEffects(class ACharacter* OwnerCharacter);
+    void ApplyChaosEffects();
     void GenerateResonance();
     void HandleEchoInteractions();
     void UpdateShadowState(float DeltaTime);
-    void CheckAffectedActors();
+    bool CheckTargetValidity(AActor* Target);
 }; 

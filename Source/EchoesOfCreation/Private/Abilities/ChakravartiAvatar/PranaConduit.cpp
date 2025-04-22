@@ -1,6 +1,7 @@
 #include "Abilities/ChakravartiAvatar/PranaConduit.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 #include "ResonanceManager.h"
 #include "EchoManager.h"
 
@@ -9,8 +10,7 @@ APranaConduit::APranaConduit()
     PrimaryActorTick.bCanEverTick = true;
     bIsActive = false;
     ConnectedTarget = nullptr;
-    ConduitRange = 1000.0f;
-    PranaTransferRate = 1.0f;
+    PranaTransferRate = 10.0f;
 }
 
 void APranaConduit::BeginPlay()
@@ -18,66 +18,42 @@ void APranaConduit::BeginPlay()
     Super::BeginPlay();
 
     // Initialize default values
-    ResonanceGenerationRate = 1.8f;
+    ResonanceGenerationRate = 1.5f;
     bIsActive = false;
 
     // Setup default resonance modifiers
-    ResonanceModifiers.Add(EResonanceType::Faith, 2.2f);
+    ResonanceModifiers.Add(EResonanceType::Faith, 2.0f);
     ResonanceModifiers.Add(EResonanceType::Doubt, 1.5f);
-    ResonanceModifiers.Add(EResonanceType::Curiosity, 2.0f);
+    ResonanceModifiers.Add(EResonanceType::Curiosity, 1.8f);
 
     // Setup default echo interactions
     EchoInteractions.Add(EEchoType::Divine, 2.2f);
     EchoInteractions.Add(EEchoType::Corrupted, 1.5f);
-    EchoInteractions.Add(EEchoType::Warped, 2.0f);
+    EchoInteractions.Add(EEchoType::Warped, 1.8f);
 }
 
 void APranaConduit::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (bIsActive)
+    if (bIsActive && ConnectedTarget)
     {
         UpdateConduitState(DeltaTime);
-        if (ConnectedTarget)
+        if (!CheckTargetValidity(ConnectedTarget))
         {
-            if (!CheckTargetValidity(ConnectedTarget))
-            {
-                DisconnectFromTarget();
-            }
-            else
-            {
-                TransferPrana(ConnectedTarget, DeltaTime);
-            }
+            DisconnectTarget();
+        }
+        else
+        {
+            TransferPrana(ConnectedTarget, DeltaTime);
         }
     }
 }
 
-void APranaConduit::InitializeConduit(EPranaType PranaType, float BasePower, float Duration)
+void APranaConduit::InitializeConduit(float BasePower, float Duration)
 {
-    CurrentPranaType = PranaType;
     ConduitPower = BasePower;
     ConduitDuration = Duration;
-
-    // Adjust properties based on prana type
-    switch (PranaType)
-    {
-        case EPranaType::VitalFlow:
-            ResonanceModifiers[EResonanceType::Faith] = 2.8f;
-            EchoInteractions[EEchoType::Divine] = 2.8f;
-            PranaTransferRate = 1.2f;
-            break;
-        case EPranaType::EnergySurge:
-            ResonanceModifiers[EResonanceType::Doubt] = 2.2f;
-            EchoInteractions[EEchoType::Corrupted] = 2.2f;
-            PranaTransferRate = 1.5f;
-            break;
-        case EPranaType::LifeCycle:
-            ResonanceModifiers[EResonanceType::Curiosity] = 2.5f;
-            EchoInteractions[EEchoType::Warped] = 2.5f;
-            PranaTransferRate = 1.0f;
-            break;
-    }
 }
 
 void APranaConduit::ActivateConduit()
@@ -94,12 +70,12 @@ void APranaConduit::DeactivateConduit()
     if (bIsActive)
     {
         bIsActive = false;
-        DisconnectFromTarget();
+        DisconnectTarget();
         OnConduitDeactivated();
     }
 }
 
-void APranaConduit::ConnectToTarget(AActor* Target)
+void APranaConduit::ConnectTarget(AActor* Target)
 {
     if (!Target || !CheckTargetValidity(Target)) return;
 
@@ -108,7 +84,7 @@ void APranaConduit::ConnectToTarget(AActor* Target)
     OnTargetConnected(Target, ConnectionStrength);
 }
 
-void APranaConduit::DisconnectFromTarget()
+void APranaConduit::DisconnectTarget()
 {
     if (ConnectedTarget)
     {
@@ -126,31 +102,17 @@ void APranaConduit::ApplyConduitEffects(AActor* Target)
     {
         float ConnectionStrength = CalculateConnectionStrength(Target);
 
-        switch (CurrentPranaType)
+        // Apply movement speed boost based on connection strength
+        if (Character->GetCharacterMovement())
         {
-            case EPranaType::VitalFlow:
-                // Apply Vital Flow effects (healing and vitality)
-                if (Character->GetCharacterMovement())
-                {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.1f; // Speed boost
-                }
-                break;
+            Character->GetCharacterMovement()->MaxWalkSpeed *= (1.0f + ConnectionStrength * 0.2f);
+        }
 
-            case EPranaType::EnergySurge:
-                // Apply Energy Surge effects (power and energy)
-                if (Character->GetCharacterMovement())
-                {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.2f; // Greater speed boost
-                }
-                break;
-
-            case EPranaType::LifeCycle:
-                // Apply Life Cycle effects (balance and harmony)
-                if (Character->GetCharacterMovement())
-                {
-                    Character->GetCharacterMovement()->MaxWalkSpeed *= 1.15f; // Moderate speed boost
-                }
-                break;
+        // Apply health regeneration based on connection strength
+        if (Character->GetHealthComponent())
+        {
+            float HealAmount = PranaTransferRate * ConnectionStrength * GetWorld()->GetDeltaSeconds();
+            Character->GetHealthComponent()->Heal(HealAmount);
         }
     }
 }
@@ -163,22 +125,19 @@ float APranaConduit::CalculateConnectionStrength(AActor* Target)
     float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
     float DistanceFactor = FMath::Clamp(1.0f - (Distance / ConduitRange), 0.0f, 1.0f);
 
-    // Apply prana type modifier
-    float TypeModifier = 1.0f;
-    switch (CurrentPranaType)
+    // Calculate alignment factor based on resonance types
+    float AlignmentFactor = 1.0f;
+    if (AEchoesCharacter* EchoesChar = Cast<AEchoesCharacter>(Target))
     {
-        case EPranaType::VitalFlow:
-            TypeModifier = 1.3f;
-            break;
-        case EPranaType::EnergySurge:
-            TypeModifier = 1.5f;
-            break;
-        case EPranaType::LifeCycle:
-            TypeModifier = 1.2f;
-            break;
+        // Check resonance alignment between source and target
+        for (const auto& Modifier : ResonanceModifiers)
+        {
+            float TargetResonance = EchoesChar->GetResonance(Modifier.Key);
+            AlignmentFactor += TargetResonance * 0.1f;
+        }
     }
 
-    return ConduitPower * DistanceFactor * TypeModifier;
+    return ConduitPower * DistanceFactor * AlignmentFactor;
 }
 
 void APranaConduit::TransferPrana(AActor* Target, float DeltaTime)
@@ -186,31 +145,21 @@ void APranaConduit::TransferPrana(AActor* Target, float DeltaTime)
     if (!Target) return;
 
     float ConnectionStrength = CalculateConnectionStrength(Target);
-    float TransferAmount = ConnectionStrength * PranaTransferRate * DeltaTime;
+    float TransferAmount = PranaTransferRate * ConnectionStrength * DeltaTime;
 
-    switch (CurrentPranaType)
+    // Transfer health from source to target
+    if (ACharacter* SourceCharacter = Cast<ACharacter>(GetOwner()))
     {
-        case EPranaType::VitalFlow:
-            // Transfer healing energy
-            UGameplayStatics::ApplyDamage(Target, -TransferAmount, nullptr, this, nullptr);
-            break;
-
-        case EPranaType::EnergySurge:
-            // Transfer power energy
-            if (ACharacter* Character = Cast<ACharacter>(Target))
+        if (ACharacter* TargetCharacter = Cast<ACharacter>(Target))
+        {
+            if (SourceCharacter->GetHealthComponent() && TargetCharacter->GetHealthComponent())
             {
-                // Apply energy boost (to be implemented in character class)
+                // Source loses health
+                SourceCharacter->GetHealthComponent()->TakeDamage(TransferAmount, FDamageEvent(), nullptr, this);
+                // Target gains health
+                TargetCharacter->GetHealthComponent()->Heal(TransferAmount);
             }
-            break;
-
-        case EPranaType::LifeCycle:
-            // Transfer balanced energy
-            UGameplayStatics::ApplyDamage(Target, -TransferAmount * 0.5f, nullptr, this, nullptr);
-            if (ACharacter* Character = Cast<ACharacter>(Target))
-            {
-                // Apply balanced boost (to be implemented in character class)
-            }
-            break;
+        }
     }
 }
 
@@ -252,8 +201,8 @@ void APranaConduit::UpdateConduitState(float DeltaTime)
     GenerateResonance();
     HandleEchoInteractions();
 
-    // Apply effects to connected target if valid
-    if (ConnectedTarget && CheckTargetValidity(ConnectedTarget))
+    // Apply effects to connected target
+    if (ConnectedTarget)
     {
         ApplyConduitEffects(ConnectedTarget);
     }

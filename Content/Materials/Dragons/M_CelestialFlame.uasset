@@ -1,0 +1,77 @@
+{
+    "Type": "Material",
+    "Properties": {
+        "MaterialDomain": "Surface",
+        "BlendMode": "BLEND_Additive",
+        "ShadingModel": "MSM_Unlit",
+        "TwoSided": true,
+        "BaseColor": {
+            "Expression": "TextureSample",
+            "Properties": {
+                "Texture": "/Game/Textures/Dragons/T_CelestialFlame",
+                "SamplerType": "SAMPLERTYPE_Color",
+                "MipValueMode": "TMVM_MipLevel",
+                "MipLevel": 0
+            }
+        },
+        "Opacity": {
+            "Expression": "TextureSample",
+            "Properties": {
+                "Texture": "/Game/Textures/Dragons/T_CelestialFlame",
+                "SamplerType": "SAMPLERTYPE_Alpha",
+                "MipValueMode": "TMVM_MipLevel",
+                "MipLevel": 0
+            }
+        },
+        "EmissiveColor": {
+            "Expression": "Multiply",
+            "Properties": {
+                "A": {
+                    "Expression": "TextureSample",
+                    "Properties": {
+                        "Texture": "/Game/Textures/Dragons/T_CelestialFlame",
+                        "SamplerType": "SAMPLERTYPE_Color",
+                        "MipValueMode": "TMVM_MipLevel",
+                        "MipLevel": 0
+                    }
+                },
+                "B": {
+                    "Expression": "Constant3Vector",
+                    "Properties": {
+                        "Constant": {
+                            "R": 2.0,
+                            "G": 1.6,
+                            "B": 0.4
+                        }
+                    }
+                }
+            }
+        },
+        "OpacityMaskClipValue": 0.333,
+        "MaterialAttributes": {
+            "Expression": "MaterialAttributes",
+            "Properties": {
+                "PixelDepthOffset": {
+                    "Expression": "Multiply",
+                    "Properties": {
+                        "A": {
+                            "Expression": "TextureSample",
+                            "Properties": {
+                                "Texture": "/Game/Textures/Dragons/T_CelestialFlame",
+                                "SamplerType": "SAMPLERTYPE_Alpha",
+                                "MipValueMode": "TMVM_MipLevel",
+                                "MipLevel": 0
+                            }
+                        },
+                        "B": {
+                            "Expression": "Constant",
+                            "Properties": {
+                                "R": 0.2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

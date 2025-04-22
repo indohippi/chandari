@@ -1,0 +1,326 @@
+{
+    "Class": "NiagaraSystem",
+    "Properties": {
+        "EmitterHandles": [
+            {
+                "EmitterName": "WindCore",
+                "Emitter": {
+                    "Class": "NiagaraEmitter",
+                    "Properties": {
+                        "EmitterProperties": {
+                            "SimulationTarget": "CPUSim",
+                            "EmitterRenderMode": "ERM_Default",
+                            "bLocalSpace": false,
+                            "bDeterministic": true,
+                            "bFixedBounds": true,
+                            "bUseMaxDrawCount": true,
+                            "MaxDrawCount": 1200,
+                            "bRequiresPersistentIDs": true,
+                            "bKillOnDeactivate": true,
+                            "bKillOnComplete": true,
+                            "bUseLegacySpawningBehavior": false,
+                            "bInterpolatedSpawning": true,
+                            "FixedBounds": {
+                                "Min": {
+                                    "X": -1500.0,
+                                    "Y": -1500.0,
+                                    "Z": -1500.0
+                                },
+                                "Max": {
+                                    "X": 1500.0,
+                                    "Y": 1500.0,
+                                    "Z": 1500.0
+                                }
+                            }
+                        },
+                        "SpawnProperties": {
+                            "SpawnRate": 60.0,
+                            "Bursts": [
+                                {
+                                    "Time": 0.0,
+                                    "Count": 120,
+                                    "CountLow": 0,
+                                    "Probability": 1.0
+                                }
+                            ]
+                        },
+                        "ParticleProperties": {
+                            "Lifetime": {
+                                "Min": 0.4,
+                                "Max": 0.8
+                            },
+                            "Size": {
+                                "Min": 30.0,
+                                "Max": 120.0
+                            },
+                            "Color": {
+                                "Min": {
+                                    "R": 0.8,
+                                    "G": 0.8,
+                                    "B": 1.0,
+                                    "A": 1.0
+                                },
+                                "Max": {
+                                    "R": 0.6,
+                                    "G": 0.6,
+                                    "B": 1.0,
+                                    "A": 1.0
+                                }
+                            },
+                            "Velocity": {
+                                "Min": {
+                                    "X": -200.0,
+                                    "Y": -200.0,
+                                    "Z": 1000.0
+                                },
+                                "Max": {
+                                    "X": 200.0,
+                                    "Y": 200.0,
+                                    "Z": 1500.0
+                                }
+                            }
+                        },
+                        "Material": {
+                            "Material": {
+                                "ObjectName": "/Game/Materials/M_WindParticle",
+                                "ObjectPath": "/Game/Materials/M_WindParticle.M_WindParticle"
+                            }
+                        },
+                        "Modules": [
+                            {
+                                "Name": "SpawnRate",
+                                "Properties": {
+                                    "SpawnRate": 60.0
+                                }
+                            },
+                            {
+                                "Name": "Lifetime",
+                                "Properties": {
+                                    "Lifetime": {
+                                        "Min": 0.4,
+                                        "Max": 0.8
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Size",
+                                "Properties": {
+                                    "Size": {
+                                        "Min": 30.0,
+                                        "Max": 120.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Color",
+                                "Properties": {
+                                    "Color": {
+                                        "Min": {
+                                            "R": 0.8,
+                                            "G": 0.8,
+                                            "B": 1.0,
+                                            "A": 1.0
+                                        },
+                                        "Max": {
+                                            "R": 0.6,
+                                            "G": 0.6,
+                                            "B": 1.0,
+                                            "A": 1.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Velocity",
+                                "Properties": {
+                                    "Velocity": {
+                                        "Min": {
+                                            "X": -200.0,
+                                            "Y": -200.0,
+                                            "Z": 1000.0
+                                        },
+                                        "Max": {
+                                            "X": 200.0,
+                                            "Y": 200.0,
+                                            "Z": 1500.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Acceleration",
+                                "Properties": {
+                                    "Acceleration": {
+                                        "X": 0.0,
+                                        "Y": 0.0,
+                                        "Z": 600.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Drag",
+                                "Properties": {
+                                    "Drag": 0.05
+                                }
+                            },
+                            {
+                                "Name": "Turbulence",
+                                "Properties": {
+                                    "Strength": 150.0,
+                                    "Frequency": 0.6
+                                }
+                            },
+                            {
+                                "Name": "Vortex",
+                                "Properties": {
+                                    "Strength": 200.0,
+                                    "Frequency": 0.3
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "EmitterName": "WindTrail",
+                "Emitter": {
+                    "Class": "NiagaraEmitter",
+                    "Properties": {
+                        "EmitterProperties": {
+                            "SimulationTarget": "CPUSim",
+                            "EmitterRenderMode": "ERM_Default",
+                            "bLocalSpace": false,
+                            "bDeterministic": true,
+                            "bFixedBounds": true,
+                            "bUseMaxDrawCount": true,
+                            "MaxDrawCount": 600,
+                            "bRequiresPersistentIDs": true,
+                            "bKillOnDeactivate": true,
+                            "bKillOnComplete": true,
+                            "bUseLegacySpawningBehavior": false,
+                            "bInterpolatedSpawning": true
+                        },
+                        "SpawnProperties": {
+                            "SpawnRate": 30.0
+                        },
+                        "ParticleProperties": {
+                            "Lifetime": {
+                                "Min": 0.2,
+                                "Max": 0.4
+                            },
+                            "Size": {
+                                "Min": 20.0,
+                                "Max": 50.0
+                            },
+                            "Color": {
+                                "Min": {
+                                    "R": 0.9,
+                                    "G": 0.9,
+                                    "B": 1.0,
+                                    "A": 0.7
+                                },
+                                "Max": {
+                                    "R": 0.7,
+                                    "G": 0.7,
+                                    "B": 1.0,
+                                    "A": 0.3
+                                }
+                            }
+                        },
+                        "Material": {
+                            "Material": {
+                                "ObjectName": "/Game/Materials/M_WindTrail",
+                                "ObjectPath": "/Game/Materials/M_WindTrail.M_WindTrail"
+                            }
+                        },
+                        "Modules": [
+                            {
+                                "Name": "SpawnRate",
+                                "Properties": {
+                                    "SpawnRate": 30.0
+                                }
+                            },
+                            {
+                                "Name": "Lifetime",
+                                "Properties": {
+                                    "Lifetime": {
+                                        "Min": 0.2,
+                                        "Max": 0.4
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Size",
+                                "Properties": {
+                                    "Size": {
+                                        "Min": 20.0,
+                                        "Max": 50.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Color",
+                                "Properties": {
+                                    "Color": {
+                                        "Min": {
+                                            "R": 0.9,
+                                            "G": 0.9,
+                                            "B": 1.0,
+                                            "A": 0.7
+                                        },
+                                        "Max": {
+                                            "R": 0.7,
+                                            "G": 0.7,
+                                            "B": 1.0,
+                                            "A": 0.3
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Velocity",
+                                "Properties": {
+                                    "Velocity": {
+                                        "Min": {
+                                            "X": -150.0,
+                                            "Y": -150.0,
+                                            "Z": 0.0
+                                        },
+                                        "Max": {
+                                            "X": 150.0,
+                                            "Y": 150.0,
+                                            "Z": 0.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Acceleration",
+                                "Properties": {
+                                    "Acceleration": {
+                                        "X": 0.0,
+                                        "Y": 0.0,
+                                        "Z": -500.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Drag",
+                                "Properties": {
+                                    "Drag": 0.1
+                                }
+                            },
+                            {
+                                "Name": "Vortex",
+                                "Properties": {
+                                    "Strength": 100.0,
+                                    "Frequency": 0.2
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+} 

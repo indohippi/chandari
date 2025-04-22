@@ -1,0 +1,27 @@
+{
+    "Class": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Normalmap",
+        "Filter": "TF_Trilinear",
+        "AddressX": "TA_Clamp",
+        "AddressY": "TA_Clamp",
+        "MipGenSettings": "TMGS_FromTextureGroup",
+        "TextureGroup": "TEXTUREGROUP_WorldNormalMap",
+        "SRGB": false,
+        "LODGroup": "TEXTUREGROUP_WorldNormalMap",
+        "Source": {
+            "Format": "PF_R8G8B8A8",
+            "Width": 256,
+            "Height": 256,
+            "Data": [
+                // Normal map for flame distortion
+                // Format: R,G,B,A
+                // R: X component (127 = no distortion)
+                // G: Y component (127 = no distortion)
+                // B: Z component (255 = facing camera)
+                // A: Unused
+                // Generated procedurally
+            ]
+        }
+    }
+} 

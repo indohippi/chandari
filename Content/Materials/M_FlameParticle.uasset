@@ -1,0 +1,53 @@
+{
+    "Class": "Material",
+    "Properties": {
+        "MaterialDomain": "MD_Particle",
+        "BlendMode": "BLEND_Additive",
+        "ShadingModel": "MSM_Unlit",
+        "TwoSided": true,
+        "OpacityMaskClipValue": 0.333,
+        "MaterialAttributes": {
+            "BaseColor": {
+                "Expression": "TextureSample",
+                "Properties": {
+                    "Texture": {
+                        "ObjectName": "/Game/Textures/Dragons/T_FlameGradient",
+                        "ObjectPath": "/Game/Textures/Dragons/T_FlameGradient.T_FlameGradient"
+                    }
+                }
+            },
+            "Opacity": {
+                "Expression": "TextureSample",
+                "Properties": {
+                    "Texture": {
+                        "ObjectName": "/Game/Textures/Dragons/T_FlameGradient",
+                        "ObjectPath": "/Game/Textures/Dragons/T_FlameGradient.T_FlameGradient"
+                    },
+                    "Channel": "A"
+                }
+            },
+            "EmissiveColor": {
+                "Expression": "Multiply",
+                "Properties": {
+                    "A": {
+                        "Expression": "TextureSample",
+                        "Properties": {
+                            "Texture": {
+                                "ObjectName": "/Game/Textures/Dragons/T_FlameGradient",
+                                "ObjectPath": "/Game/Textures/Dragons/T_FlameGradient.T_FlameGradient"
+                            }
+                        }
+                    },
+                    "B": {
+                        "Expression": "Constant",
+                        "Properties": {
+                            "R": 2.0,
+                            "G": 2.0,
+                            "B": 2.0
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

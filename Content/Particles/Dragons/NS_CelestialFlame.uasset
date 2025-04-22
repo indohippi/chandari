@@ -1,0 +1,321 @@
+{
+    "Class": "NiagaraSystem",
+    "Properties": {
+        "EmitterHandles": [
+            {
+                "EmitterName": "FlameCore",
+                "Emitter": {
+                    "Class": "NiagaraEmitter",
+                    "Properties": {
+                        "EmitterProperties": {
+                            "SimulationTarget": "CPUSim",
+                            "EmitterRenderMode": "ERM_Default",
+                            "bLocalSpace": false,
+                            "bDeterministic": true,
+                            "bFixedBounds": true,
+                            "bUseMaxDrawCount": true,
+                            "MaxDrawCount": 1000,
+                            "bRequiresPersistentIDs": true,
+                            "bKillOnDeactivate": true,
+                            "bKillOnComplete": true,
+                            "bUseLegacySpawningBehavior": false,
+                            "bInterpolatedSpawning": true,
+                            "bFixedBounds": true,
+                            "FixedBounds": {
+                                "Min": {
+                                    "X": -1000.0,
+                                    "Y": -1000.0,
+                                    "Z": -1000.0
+                                },
+                                "Max": {
+                                    "X": 1000.0,
+                                    "Y": 1000.0,
+                                    "Z": 1000.0
+                                }
+                            }
+                        },
+                        "SpawnProperties": {
+                            "SpawnRate": 50.0,
+                            "Bursts": [
+                                {
+                                    "Time": 0.0,
+                                    "Count": 100,
+                                    "CountLow": 0,
+                                    "Probability": 1.0
+                                }
+                            ]
+                        },
+                        "ParticleProperties": {
+                            "Lifetime": {
+                                "Min": 0.5,
+                                "Max": 1.0
+                            },
+                            "Size": {
+                                "Min": 50.0,
+                                "Max": 200.0
+                            },
+                            "Color": {
+                                "Min": {
+                                    "R": 1.0,
+                                    "G": 0.8,
+                                    "B": 0.2,
+                                    "A": 1.0
+                                },
+                                "Max": {
+                                    "R": 1.0,
+                                    "G": 1.0,
+                                    "B": 1.0,
+                                    "A": 1.0
+                                }
+                            },
+                            "Velocity": {
+                                "Min": {
+                                    "X": 0.0,
+                                    "Y": 0.0,
+                                    "Z": 1000.0
+                                },
+                                "Max": {
+                                    "X": 0.0,
+                                    "Y": 0.0,
+                                    "Z": 1500.0
+                                }
+                            }
+                        },
+                        "Material": {
+                            "Material": {
+                                "ObjectName": "/Game/Materials/M_FlameParticle",
+                                "ObjectPath": "/Game/Materials/M_FlameParticle.M_FlameParticle"
+                            }
+                        },
+                        "Modules": [
+                            {
+                                "Name": "SpawnRate",
+                                "Properties": {
+                                    "SpawnRate": 50.0
+                                }
+                            },
+                            {
+                                "Name": "Lifetime",
+                                "Properties": {
+                                    "Lifetime": {
+                                        "Min": 0.5,
+                                        "Max": 1.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Size",
+                                "Properties": {
+                                    "Size": {
+                                        "Min": 50.0,
+                                        "Max": 200.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Color",
+                                "Properties": {
+                                    "Color": {
+                                        "Min": {
+                                            "R": 1.0,
+                                            "G": 0.8,
+                                            "B": 0.2,
+                                            "A": 1.0
+                                        },
+                                        "Max": {
+                                            "R": 1.0,
+                                            "G": 1.0,
+                                            "B": 1.0,
+                                            "A": 1.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Velocity",
+                                "Properties": {
+                                    "Velocity": {
+                                        "Min": {
+                                            "X": 0.0,
+                                            "Y": 0.0,
+                                            "Z": 1000.0
+                                        },
+                                        "Max": {
+                                            "X": 0.0,
+                                            "Y": 0.0,
+                                            "Z": 1500.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Acceleration",
+                                "Properties": {
+                                    "Acceleration": {
+                                        "X": 0.0,
+                                        "Y": 0.0,
+                                        "Z": 500.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Drag",
+                                "Properties": {
+                                    "Drag": 0.1
+                                }
+                            },
+                            {
+                                "Name": "Turbulence",
+                                "Properties": {
+                                    "Strength": 100.0,
+                                    "Frequency": 0.5
+                                }
+                            },
+                            {
+                                "Name": "Collision",
+                                "Properties": {
+                                    "CollisionMode": "ECollisionMode::WorldStatic",
+                                    "BounceFactor": 0.2,
+                                    "FrictionFactor": 0.5
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "EmitterName": "FlameTrail",
+                "Emitter": {
+                    "Class": "NiagaraEmitter",
+                    "Properties": {
+                        "EmitterProperties": {
+                            "SimulationTarget": "CPUSim",
+                            "EmitterRenderMode": "ERM_Default",
+                            "bLocalSpace": false,
+                            "bDeterministic": true,
+                            "bFixedBounds": true,
+                            "bUseMaxDrawCount": true,
+                            "MaxDrawCount": 500,
+                            "bRequiresPersistentIDs": true,
+                            "bKillOnDeactivate": true,
+                            "bKillOnComplete": true,
+                            "bUseLegacySpawningBehavior": false,
+                            "bInterpolatedSpawning": true
+                        },
+                        "SpawnProperties": {
+                            "SpawnRate": 25.0
+                        },
+                        "ParticleProperties": {
+                            "Lifetime": {
+                                "Min": 0.2,
+                                "Max": 0.4
+                            },
+                            "Size": {
+                                "Min": 20.0,
+                                "Max": 50.0
+                            },
+                            "Color": {
+                                "Min": {
+                                    "R": 1.0,
+                                    "G": 0.6,
+                                    "B": 0.0,
+                                    "A": 0.8
+                                },
+                                "Max": {
+                                    "R": 1.0,
+                                    "G": 0.8,
+                                    "B": 0.2,
+                                    "A": 0.4
+                                }
+                            }
+                        },
+                        "Material": {
+                            "Material": {
+                                "ObjectName": "/Game/Materials/M_FlameTrail",
+                                "ObjectPath": "/Game/Materials/M_FlameTrail.M_FlameTrail"
+                            }
+                        },
+                        "Modules": [
+                            {
+                                "Name": "SpawnRate",
+                                "Properties": {
+                                    "SpawnRate": 25.0
+                                }
+                            },
+                            {
+                                "Name": "Lifetime",
+                                "Properties": {
+                                    "Lifetime": {
+                                        "Min": 0.2,
+                                        "Max": 0.4
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Size",
+                                "Properties": {
+                                    "Size": {
+                                        "Min": 20.0,
+                                        "Max": 50.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Color",
+                                "Properties": {
+                                    "Color": {
+                                        "Min": {
+                                            "R": 1.0,
+                                            "G": 0.6,
+                                            "B": 0.0,
+                                            "A": 0.8
+                                        },
+                                        "Max": {
+                                            "R": 1.0,
+                                            "G": 0.8,
+                                            "B": 0.2,
+                                            "A": 0.4
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Velocity",
+                                "Properties": {
+                                    "Velocity": {
+                                        "Min": {
+                                            "X": -100.0,
+                                            "Y": -100.0,
+                                            "Z": 0.0
+                                        },
+                                        "Max": {
+                                            "X": 100.0,
+                                            "Y": 100.0,
+                                            "Z": 0.0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Acceleration",
+                                "Properties": {
+                                    "Acceleration": {
+                                        "X": 0.0,
+                                        "Y": 0.0,
+                                        "Z": -500.0
+                                    }
+                                }
+                            },
+                            {
+                                "Name": "Drag",
+                                "Properties": {
+                                    "Drag": 0.2
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+} 

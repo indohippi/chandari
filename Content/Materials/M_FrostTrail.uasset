@@ -1,0 +1,64 @@
+{
+    "Class": "Material",
+    "Properties": {
+        "MaterialDomain": "MD_Particle",
+        "BlendMode": "BLEND_Additive",
+        "ShadingModel": "MSM_Unlit",
+        "TwoSided": true,
+        "OpacityMaskClipValue": 0.333,
+        "MaterialAttributes": {
+            "BaseColor": {
+                "Expression": "TextureSample",
+                "Properties": {
+                    "Texture": {
+                        "ObjectName": "/Game/Textures/Dragons/T_FrostGradient",
+                        "ObjectPath": "/Game/Textures/Dragons/T_FrostGradient.T_FrostGradient"
+                    }
+                }
+            },
+            "Opacity": {
+                "Expression": "Multiply",
+                "Properties": {
+                    "A": {
+                        "Expression": "TextureSample",
+                        "Properties": {
+                            "Texture": {
+                                "ObjectName": "/Game/Textures/Dragons/T_FrostGradient",
+                                "ObjectPath": "/Game/Textures/Dragons/T_FrostGradient.T_FrostGradient"
+                            },
+                            "Channel": "A"
+                        }
+                    },
+                    "B": {
+                        "Expression": "Constant",
+                        "Properties": {
+                            "R": 0.4
+                        }
+                    }
+                }
+            },
+            "EmissiveColor": {
+                "Expression": "Multiply",
+                "Properties": {
+                    "A": {
+                        "Expression": "TextureSample",
+                        "Properties": {
+                            "Texture": {
+                                "ObjectName": "/Game/Textures/Dragons/T_FrostGradient",
+                                "ObjectPath": "/Game/Textures/Dragons/T_FrostGradient.T_FrostGradient"
+                            }
+                        }
+                    },
+                    "B": {
+                        "Expression": "Constant",
+                        "Properties": {
+                            "R": 1.4,
+                            "G": 1.4,
+                            "B": 1.6
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

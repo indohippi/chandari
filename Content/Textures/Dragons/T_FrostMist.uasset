@@ -1,0 +1,38 @@
+{
+    "Type": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Default",
+        "Filter": "TF_Trilinear",
+        "LODGroup": "TEXTUREGROUP_Particles",
+        "MipGenSettings": "TMGS_FromTextureGroup",
+        "PowerOfTwoMode": "ETexturePowerOfTwoSetting::None",
+        "SizeX": 256,
+        "SizeY": 256,
+        "Format": "PF_R8G8B8A8",
+        "ProceduralData": {
+            "Expression": "ProceduralMist",
+            "Properties": {
+                "Resolution": 256,
+                "BaseColor": {
+                    "R": 0.2,
+                    "G": 0.8,
+                    "B": 1.0,
+                    "A": 0.6
+                },
+                "Density": 0.7,
+                "DensityVariation": 0.4,
+                "DensityScale": 0.3,
+                "DensitySpeed": 0.15,
+                "EdgeSoftness": 0.8,
+                "EdgeScale": 0.4,
+                "NoiseIntensity": 0.5,
+                "NoiseScale": 0.4,
+                "NoiseSpeed": 0.2,
+                "AlphaFalloff": 0.6,
+                "VolumetricSteps": 8,
+                "VolumetricDensity": 0.5,
+                "VolumetricScale": 0.3
+            }
+        }
+    }
+} 

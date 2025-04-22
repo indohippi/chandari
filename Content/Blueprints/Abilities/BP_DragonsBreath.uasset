@@ -1,0 +1,42 @@
+{
+    "Class": "Blueprint",
+    "SuperClass": "/Script/EchoesOfCreation.ADragonsBreath",
+    "Components": [
+        {
+            "Name": "RootComponent",
+            "Class": "SceneComponent"
+        },
+        {
+            "Name": "BreathParticleSystem",
+            "Class": "ParticleSystemComponent",
+            "Properties": {
+                "Template": "/Game/Effects/Dragons/P_CelestialFlame",
+                "bAutoActivate": false
+            }
+        },
+        {
+            "Name": "BreathNiagaraSystem",
+            "Class": "NiagaraComponent",
+            "Properties": {
+                "Asset": "/Game/Effects/Dragons/NS_BreathTrail",
+                "bAutoActivate": false
+            }
+        }
+    ],
+    "Properties": {
+        "BreathRange": 1000.0,
+        "BreathAngle": 60.0,
+        "ElementalPower": 1.0,
+        "ResonanceGenerationRate": 2.0,
+        "ResonanceModifiers": {
+            "Faith": 2.0,
+            "Doubt": 1.5,
+            "Curiosity": 2.5
+        },
+        "EchoInteractions": {
+            "Divine": 2.5,
+            "Corrupted": 1.5,
+            "Warped": 2.0
+        }
+    }
+} 

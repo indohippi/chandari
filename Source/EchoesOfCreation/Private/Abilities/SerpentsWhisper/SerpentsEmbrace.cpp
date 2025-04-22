@@ -1,6 +1,8 @@
 #include "Abilities/SerpentsWhisper/SerpentsEmbrace.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
 #include "ResonanceManager.h"
 #include "EchoManager.h"
 
@@ -8,7 +10,9 @@ ASerpentsEmbrace::ASerpentsEmbrace()
 {
     PrimaryActorTick.bCanEverTick = true;
     bIsActive = false;
-    CurrentTarget = nullptr;
+    EmbraceRange = 600.0f;
+    ConstrictionPower = 1.0f;
+    MaxTargets = 3;
 }
 
 void ASerpentsEmbrace::BeginPlay()
@@ -16,19 +20,18 @@ void ASerpentsEmbrace::BeginPlay()
     Super::BeginPlay();
 
     // Initialize default values
-    EmbraceRange = 800.0f;
-    ResonanceGenerationRate = 1.0f;
+    ResonanceGenerationRate = 1.5f;
     bIsActive = false;
 
     // Setup default resonance modifiers
-    ResonanceModifiers.Add(EResonanceType::Faith, 0.8f);
-    ResonanceModifiers.Add(EResonanceType::Doubt, 1.2f);
-    ResonanceModifiers.Add(EResonanceType::Curiosity, 1.5f);
+    ResonanceModifiers.Add(EResonanceType::Faith, 1.5f);
+    ResonanceModifiers.Add(EResonanceType::Doubt, 2.5f);
+    ResonanceModifiers.Add(EResonanceType::Curiosity, 2.0f);
 
     // Setup default echo interactions
-    EchoInteractions.Add(EEchoType::Divine, 0.7f);
-    EchoInteractions.Add(EEchoType::Corrupted, 1.8f);
-    EchoInteractions.Add(EEchoType::Warped, 1.3f);
+    EchoInteractions.Add(EEchoType::Divine, 1.5f);
+    EchoInteractions.Add(EEchoType::Corrupted, 2.5f);
+    EchoInteractions.Add(EEchoType::Warped, 2.0f);
 }
 
 void ASerpentsEmbrace::Tick(float DeltaTime)
@@ -38,30 +41,41 @@ void ASerpentsEmbrace::Tick(float DeltaTime)
     if (bIsActive)
     {
         UpdateEmbraceState(DeltaTime);
-        CheckTargetValidity();
+        ApplyConstrictionEffects(DeltaTime);
     }
 }
 
 void ASerpentsEmbrace::InitializeEmbrace(EEmbraceType EmbraceType, float BasePower, float Duration)
 {
     CurrentEmbraceType = EmbraceType;
-    EmbracePower = BasePower;
+    ConstrictionPower = BasePower;
     EmbraceDuration = Duration;
 
     // Adjust properties based on embrace type
     switch (EmbraceType)
     {
-        case EEmbraceType::CreationCoil:
-            ResonanceModifiers[EResonanceType::Faith] = 1.5f;
-            EchoInteractions[EEchoType::Divine] = 1.8f;
+        case EEmbraceType::Constriction:
+            // Maximum control over fewer targets
+            MaxTargets = 2;
+            ConstrictionPower *= 1.5f;
+            ResonanceModifiers[EResonanceType::Doubt] = 3.0f;
+            EchoInteractions[EEchoType::Corrupted] = 2.8f;
             break;
-        case EEmbraceType::DestructionFang:
-            ResonanceModifiers[EResonanceType::Doubt] = 2.0f;
-            EchoInteractions[EEchoType::Corrupted] = 2.2f;
+
+        case EEmbraceType::Envelopment:
+            // Moderate control over more targets
+            MaxTargets = 4;
+            ConstrictionPower *= 1.2f;
+            ResonanceModifiers[EResonanceType::Faith] = 2.5f;
+            EchoInteractions[EEchoType::Divine] = 2.5f;
             break;
-        case EEmbraceType::EternalCycle:
-            ResonanceModifiers[EResonanceType::Curiosity] = 1.8f;
-            EchoInteractions[EEchoType::Warped] = 2.0f;
+
+        case EEmbraceType::Absorption:
+            // Energy drain and healing
+            MaxTargets = 3;
+            ConstrictionPower *= 1.3f;
+            ResonanceModifiers[EResonanceType::Curiosity] = 2.8f;
+            EchoInteractions[EEchoType::Warped] = 2.8f;
             break;
     }
 }
@@ -72,6 +86,7 @@ void ASerpentsEmbrace::ActivateEmbrace()
     {
         bIsActive = true;
         OnEmbraceActivated();
+        FindTargetsInRange();
     }
 }
 
@@ -80,66 +95,212 @@ void ASerpentsEmbrace::DeactivateEmbrace()
     if (bIsActive)
     {
         bIsActive = false;
+        
+        // Release all constricted targets
+        for (auto& Target : ConstrictedTargets)
+        {
+            ReleaseTarget(Target.Key);
+        }
+        ConstrictedTargets.Empty();
+        
         OnEmbraceDeactivated();
-        CurrentTarget = nullptr;
     }
 }
 
-void ASerpentsEmbrace::TargetEmbrace(AActor* Target)
+void ASerpentsEmbrace::FindTargetsInRange()
 {
-    if (!Target || !bIsActive) return;
+    TArray<AActor*> PotentialTargets;
+    UGameplayStatics::GetAllActorsInRadius(this, GetActorLocation(), EmbraceRange, PotentialTargets);
 
-    // Check if target is in range
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (OwnerCharacter)
+    for (AActor* Actor : PotentialTargets)
     {
-        float Distance = FVector::Distance(OwnerCharacter->GetActorLocation(), Target->GetActorLocation());
-        if (Distance <= EmbraceRange)
+        if (CanConstrictTarget(Actor) && ConstrictedTargets.Num() < MaxTargets)
         {
-            CurrentTarget = Target;
-            OnTargetEmbraced(Target);
-            ApplyEmbraceEffects(Target);
+            ConstrictTarget(Actor);
         }
     }
 }
 
-void ASerpentsEmbrace::ApplyEmbraceEffects(AActor* Target)
+bool ASerpentsEmbrace::CanConstrictTarget(AActor* Target)
+{
+    if (!Target || Target == GetOwner() || ConstrictedTargets.Contains(Target)) return false;
+
+    ACharacter* Character = Cast<ACharacter>(Target);
+    return Character != nullptr;
+}
+
+void ASerpentsEmbrace::ConstrictTarget(AActor* Target)
 {
     if (!Target) return;
 
-    if (ACharacter* Character = Cast<ACharacter>(Target))
+    ACharacter* Character = Cast<ACharacter>(Target);
+    if (!Character) return;
+
+    // Store original movement properties
+    FConstrictedTargetData TargetData;
+    TargetData.OriginalMaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+    TargetData.ConstrictionTime = 0.0f;
+    TargetData.ConstrictionStrength = CalculateConstrictionStrength(Target);
+
+    ConstrictedTargets.Add(Target, TargetData);
+
+    // Apply initial constriction effects
+    Character->GetCharacterMovement()->MaxWalkSpeed *= (1.0f - TargetData.ConstrictionStrength);
+    Character->GetCharacterMovement()->GravityScale *= (1.0f + TargetData.ConstrictionStrength);
+
+    OnTargetConstricted(Target, TargetData.ConstrictionStrength);
+}
+
+void ASerpentsEmbrace::ReleaseTarget(AActor* Target)
+{
+    if (!Target) return;
+
+    ACharacter* Character = Cast<ACharacter>(Target);
+    if (!Character) return;
+
+    // Restore original movement properties
+    if (FConstrictedTargetData* TargetData = ConstrictedTargets.Find(Target))
     {
+        Character->GetCharacterMovement()->MaxWalkSpeed = TargetData->OriginalMaxSpeed;
+        Character->GetCharacterMovement()->GravityScale = 1.0f;
+    }
+
+    OnTargetReleased(Target);
+}
+
+void ASerpentsEmbrace::ApplyConstrictionEffects(float DeltaTime)
+{
+    TArray<AActor*> TargetsToRelease;
+
+    for (auto& TargetPair : ConstrictedTargets)
+    {
+        AActor* Target = TargetPair.Key;
+        FConstrictedTargetData& TargetData = TargetPair.Value;
+
+        if (!Target || !IsValid(Target))
+        {
+            TargetsToRelease.Add(Target);
+            continue;
+        }
+
+        TargetData.ConstrictionTime += DeltaTime;
+        float CurrentStrength = TargetData.ConstrictionStrength;
+
+        ACharacter* Character = Cast<ACharacter>(Target);
+        if (!Character) continue;
+
         switch (CurrentEmbraceType)
         {
-            case EEmbraceType::CreationCoil:
-                // Apply healing and creation effects
-                UGameplayStatics::ApplyDamage(Target, -EmbracePower * 0.1f, nullptr, this, nullptr);
-                // Apply creation effect (to be implemented in character class)
+            case EEmbraceType::Constriction:
+                // Apply increasing constriction damage
+                ApplyConstrictionDamage(Character, CurrentStrength, DeltaTime);
+                // Gradually reduce movement speed
+                Character->GetCharacterMovement()->MaxWalkSpeed *= (1.0f - CurrentStrength * 0.1f);
                 break;
 
-            case EEmbraceType::DestructionFang:
-                // Apply damage and destruction effects
-                UGameplayStatics::ApplyDamage(Target, EmbracePower * 0.15f, nullptr, this, nullptr);
-                // Apply destruction effect (to be implemented in character class)
+            case EEmbraceType::Envelopment:
+                // Apply moderate damage and control effects
+                ApplyEnvelopmentEffects(Character, CurrentStrength, DeltaTime);
                 break;
 
-            case EEmbraceType::EternalCycle:
-                // Apply cycle effects (both creation and destruction)
-                float CycleValue = FMath::Sin(GetWorld()->GetTimeSeconds() * 2.0f);
-                if (CycleValue > 0)
-                {
-                    // Creation phase
-                    UGameplayStatics::ApplyDamage(Target, -EmbracePower * 0.05f, nullptr, this, nullptr);
-                }
-                else
-                {
-                    // Destruction phase
-                    UGameplayStatics::ApplyDamage(Target, EmbracePower * 0.05f, nullptr, this, nullptr);
-                }
-                // Apply cycle effect (to be implemented in character class)
+            case EEmbraceType::Absorption:
+                // Drain health and resources
+                ApplyAbsorptionEffects(Character, CurrentStrength, DeltaTime);
                 break;
         }
+
+        // Check if target has moved out of range
+        float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+        if (Distance > EmbraceRange)
+        {
+            TargetsToRelease.Add(Target);
+        }
     }
+
+    // Release targets that are no longer valid or in range
+    for (AActor* Target : TargetsToRelease)
+    {
+        ReleaseTarget(Target);
+        ConstrictedTargets.Remove(Target);
+    }
+}
+
+void ASerpentsEmbrace::ApplyConstrictionDamage(ACharacter* Target, float Strength, float DeltaTime)
+{
+    float DamageAmount = ConstrictionPower * Strength * DeltaTime;
+    UGameplayStatics::ApplyDamage(Target, DamageAmount, nullptr, this, nullptr);
+
+    // Apply additional movement restrictions
+    if (Target->GetCharacterMovement())
+    {
+        Target->GetCharacterMovement()->GravityScale = FMath::Min(
+            Target->GetCharacterMovement()->GravityScale + (Strength * DeltaTime),
+            2.0f
+        );
+    }
+}
+
+void ASerpentsEmbrace::ApplyEnvelopmentEffects(ACharacter* Target, float Strength, float DeltaTime)
+{
+    // Apply moderate damage
+    float DamageAmount = ConstrictionPower * Strength * DeltaTime * 0.5f;
+    UGameplayStatics::ApplyDamage(Target, DamageAmount, nullptr, this, nullptr);
+
+    // Apply control effects
+    if (Target->GetCharacterMovement())
+    {
+        // Gradually pull target towards the caster
+        FVector DirectionToCaster = (GetActorLocation() - Target->GetActorLocation()).GetSafeNormal();
+        Target->GetCharacterMovement()->AddForce(DirectionToCaster * Strength * 1000.0f);
+    }
+}
+
+void ASerpentsEmbrace::ApplyAbsorptionEffects(ACharacter* Target, float Strength, float DeltaTime)
+{
+    // Apply health drain
+    float DrainAmount = ConstrictionPower * Strength * DeltaTime * 0.7f;
+    UGameplayStatics::ApplyDamage(Target, DrainAmount, nullptr, this, nullptr);
+
+    // Heal the caster
+    if (ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()))
+    {
+        if (OwnerCharacter->GetHealthComponent())
+        {
+            OwnerCharacter->GetHealthComponent()->Heal(DrainAmount * 0.5f);
+        }
+    }
+
+    // Apply energy drain effects
+    if (Target->GetCharacterMovement())
+    {
+        Target->GetCharacterMovement()->MaxWalkSpeed *= (1.0f - Strength * 0.05f);
+    }
+}
+
+float ASerpentsEmbrace::CalculateConstrictionStrength(AActor* Target)
+{
+    if (!Target) return 0.0f;
+
+    // Calculate base strength based on distance
+    float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
+    float DistanceFactor = FMath::Clamp(1.0f - (Distance / EmbraceRange), 0.0f, 1.0f);
+
+    // Apply embrace type modifier
+    float TypeModifier = 1.0f;
+    switch (CurrentEmbraceType)
+    {
+        case EEmbraceType::Constriction:
+            TypeModifier = 1.5f;
+            break;
+        case EEmbraceType::Envelopment:
+            TypeModifier = 1.2f;
+            break;
+        case EEmbraceType::Absorption:
+            TypeModifier = 1.3f;
+            break;
+    }
+
+    return ConstrictionPower * DistanceFactor * TypeModifier;
 }
 
 void ASerpentsEmbrace::GenerateResonance()
@@ -148,7 +309,7 @@ void ASerpentsEmbrace::GenerateResonance()
     {
         for (const auto& Modifier : ResonanceModifiers)
         {
-            float ResonanceAmount = EmbracePower * Modifier.Value * ResonanceGenerationRate;
+            float ResonanceAmount = ConstrictionPower * Modifier.Value * ResonanceGenerationRate;
             ResonanceManager->AddResonance(Modifier.Key, ResonanceAmount);
         }
     }
@@ -161,7 +322,7 @@ void ASerpentsEmbrace::HandleEchoInteractions()
         for (const auto& Interaction : EchoInteractions)
         {
             float EchoModifier = Interaction.Value;
-            EchoManager->ModifyEchoStrength(Interaction.Key, EchoModifier * EmbracePower);
+            EchoManager->ModifyEchoStrength(Interaction.Key, EchoModifier * ConstrictionPower);
         }
     }
 }
@@ -179,30 +340,4 @@ void ASerpentsEmbrace::UpdateEmbraceState(float DeltaTime)
     // Generate resonance and handle echo interactions
     GenerateResonance();
     HandleEchoInteractions();
-
-    // Apply effects to current target
-    if (CurrentTarget)
-    {
-        ApplyEmbraceEffects(CurrentTarget);
-    }
-}
-
-void ASerpentsEmbrace::CheckTargetValidity()
-{
-    if (!CurrentTarget || CurrentTarget->IsPendingKill())
-    {
-        CurrentTarget = nullptr;
-        return;
-    }
-
-    // Check if target is still in range
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (OwnerCharacter)
-    {
-        float Distance = FVector::Distance(OwnerCharacter->GetActorLocation(), CurrentTarget->GetActorLocation());
-        if (Distance > EmbraceRange)
-        {
-            CurrentTarget = nullptr;
-        }
-    }
 } 

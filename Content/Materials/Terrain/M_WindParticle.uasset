@@ -1,0 +1,95 @@
+{
+    "Type": "Material",
+    "Properties": {
+        "MaterialDomain": "Surface",
+        "BlendMode": "BLEND_Translucent",
+        "ShadingModel": "MSM_DefaultLit",
+        "TwoSided": true,
+        "BaseColor": {
+            "Expression": "TextureSample",
+            "Properties": {
+                "Texture": "/Game/Textures/Terrain/T_WindGradient",
+                "SamplerType": "SAMPLERTYPE_Color",
+                "MipValueMode": "TMVM_MipLevel",
+                "MipLevel": 0
+            }
+        },
+        "Opacity": {
+            "Expression": "TextureSample",
+            "Properties": {
+                "Texture": "/Game/Textures/Terrain/T_WindGradient",
+                "SamplerType": "SAMPLERTYPE_Alpha",
+                "MipValueMode": "TMVM_MipLevel",
+                "MipLevel": 0
+            }
+        },
+        "Metallic": {
+            "Expression": "Constant",
+            "Properties": {
+                "R": 0.2
+            }
+        },
+        "Specular": {
+            "Expression": "Constant",
+            "Properties": {
+                "R": 0.3
+            }
+        },
+        "Roughness": {
+            "Expression": "Constant",
+            "Properties": {
+                "R": 0.4
+            }
+        },
+        "EmissiveColor": {
+            "Expression": "Multiply",
+            "Properties": {
+                "A": {
+                    "Expression": "TextureSample",
+                    "Properties": {
+                        "Texture": "/Game/Textures/Terrain/T_WindGradient",
+                        "SamplerType": "SAMPLERTYPE_Color",
+                        "MipValueMode": "TMVM_MipLevel",
+                        "MipLevel": 0
+                    }
+                },
+                "B": {
+                    "Expression": "Constant3Vector",
+                    "Properties": {
+                        "Constant": {
+                            "R": 0.6,
+                            "G": 0.8,
+                            "B": 1.0
+                        }
+                    }
+                }
+            }
+        },
+        "OpacityMaskClipValue": 0.333,
+        "MaterialAttributes": {
+            "Expression": "MaterialAttributes",
+            "Properties": {
+                "PixelDepthOffset": {
+                    "Expression": "Multiply",
+                    "Properties": {
+                        "A": {
+                            "Expression": "TextureSample",
+                            "Properties": {
+                                "Texture": "/Game/Textures/Terrain/T_WindGradient",
+                                "SamplerType": "SAMPLERTYPE_Alpha",
+                                "MipValueMode": "TMVM_MipLevel",
+                                "MipLevel": 0
+                            }
+                        },
+                        "B": {
+                            "Expression": "Constant",
+                            "Properties": {
+                                "R": 0.1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 

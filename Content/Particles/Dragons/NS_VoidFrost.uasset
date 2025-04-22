@@ -1,0 +1,194 @@
+{
+    "Type": "NiagaraSystem",
+    "Properties": {
+        "Emitters": [
+            {
+                "Name": "FrostParticles",
+                "Properties": {
+                    "SimulationTarget": "CPUSim",
+                    "MaxDrawCount": 1000,
+                    "SpawnRate": 50.0,
+                    "ParticleLifetime": {
+                        "Min": 1.0,
+                        "Max": 2.0
+                    },
+                    "ParticleSize": {
+                        "Min": 5.0,
+                        "Max": 15.0
+                    },
+                    "ParticleColor": {
+                        "Start": {
+                            "R": 0.3,
+                            "G": 0.9,
+                            "B": 1.0,
+                            "A": 0.8
+                        },
+                        "End": {
+                            "R": 0.1,
+                            "G": 0.4,
+                            "B": 0.6,
+                            "A": 0.0
+                        }
+                    },
+                    "ParticleVelocity": {
+                        "Min": {
+                            "X": -100.0,
+                            "Y": -100.0,
+                            "Z": 50.0
+                        },
+                        "Max": {
+                            "X": 100.0,
+                            "Y": 100.0,
+                            "Z": 200.0
+                        }
+                    },
+                    "Material": "/Game/Materials/Dragons/M_FrostParticle",
+                    "Modules": [
+                        {
+                            "Type": "Acceleration",
+                            "Properties": {
+                                "Acceleration": {
+                                    "X": 0.0,
+                                    "Y": 0.0,
+                                    "Z": -50.0
+                                }
+                            }
+                        },
+                        {
+                            "Type": "Drag",
+                            "Properties": {
+                                "DragCoefficient": 0.5
+                            }
+                        },
+                        {
+                            "Type": "Vortex",
+                            "Properties": {
+                                "Strength": 0.3,
+                                "Scale": 0.5
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "Name": "FrostCrystals",
+                "Properties": {
+                    "SimulationTarget": "CPUSim",
+                    "MaxDrawCount": 200,
+                    "SpawnRate": 10.0,
+                    "ParticleLifetime": {
+                        "Min": 2.0,
+                        "Max": 4.0
+                    },
+                    "ParticleSize": {
+                        "Min": 20.0,
+                        "Max": 40.0
+                    },
+                    "ParticleColor": {
+                        "Start": {
+                            "R": 0.4,
+                            "G": 1.0,
+                            "B": 1.2,
+                            "A": 0.9
+                        },
+                        "End": {
+                            "R": 0.2,
+                            "G": 0.6,
+                            "B": 0.8,
+                            "A": 0.0
+                        }
+                    },
+                    "ParticleVelocity": {
+                        "Min": {
+                            "X": -50.0,
+                            "Y": -50.0,
+                            "Z": 0.0
+                        },
+                        "Max": {
+                            "X": 50.0,
+                            "Y": 50.0,
+                            "Z": 100.0
+                        }
+                    },
+                    "Material": "/Game/Materials/Dragons/M_FrostCrystal",
+                    "Modules": [
+                        {
+                            "Type": "Rotation",
+                            "Properties": {
+                                "RotationRate": {
+                                    "Min": 10.0,
+                                    "Max": 30.0
+                                }
+                            }
+                        },
+                        {
+                            "Type": "Gravity",
+                            "Properties": {
+                                "GravityScale": 0.2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "Name": "FrostMist",
+                "Properties": {
+                    "SimulationTarget": "CPUSim",
+                    "MaxDrawCount": 500,
+                    "SpawnRate": 20.0,
+                    "ParticleLifetime": {
+                        "Min": 3.0,
+                        "Max": 5.0
+                    },
+                    "ParticleSize": {
+                        "Min": 30.0,
+                        "Max": 60.0
+                    },
+                    "ParticleColor": {
+                        "Start": {
+                            "R": 0.2,
+                            "G": 0.8,
+                            "B": 1.0,
+                            "A": 0.4
+                        },
+                        "End": {
+                            "R": 0.1,
+                            "G": 0.4,
+                            "B": 0.6,
+                            "A": 0.0
+                        }
+                    },
+                    "ParticleVelocity": {
+                        "Min": {
+                            "X": -30.0,
+                            "Y": -30.0,
+                            "Z": 0.0
+                        },
+                        "Max": {
+                            "X": 30.0,
+                            "Y": 30.0,
+                            "Z": 50.0
+                        }
+                    },
+                    "Material": "/Game/Materials/Dragons/M_FrostMist",
+                    "Modules": [
+                        {
+                            "Type": "Noise",
+                            "Properties": {
+                                "NoiseIntensity": 0.3,
+                                "NoiseScale": 0.4,
+                                "NoiseSpeed": 0.2
+                            }
+                        },
+                        {
+                            "Type": "Scale",
+                            "Properties": {
+                                "ScaleRate": 0.2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+} 

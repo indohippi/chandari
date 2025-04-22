@@ -111,54 +111,68 @@ void ACosmicBreath::ApplyBreathEffects(AActor* Target)
 {
     if (!Target) return;
 
-    float EffectStrength = CalculateEffectStrength(Target);
-
-    switch (CurrentBreathType)
+    if (ACharacter* Character = Cast<ACharacter>(Target))
     {
-        case ECosmicBreathType::SolarFlare:
-            // Apply Solar Flare effects (burning and damage)
-            if (ACharacter* Character = Cast<ACharacter>(Target))
-            {
-                // Apply damage over time
-                UGameplayStatics::ApplyDamage(Target, BreathPower * 0.1f, nullptr, this, nullptr);
-            }
-            break;
+        float EffectStrength = CalculateEffectStrength(Target);
 
-        case ECosmicBreathType::LunarTide:
-            // Apply Lunar Tide effects (slowing and healing)
-            if (ACharacter* Character = Cast<ACharacter>(Target))
-            {
-                // Apply healing over time
-                UGameplayStatics::ApplyDamage(Target, -BreathPower * 0.1f, nullptr, this, nullptr);
-            }
-            break;
+        switch (CurrentBreathType)
+        {
+            case ECosmicBreathType::SolarFlare:
+                // Apply Solar Flare effects (burning and purification)
+                if (Character->GetCharacterMovement())
+                {
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.8f; // Slow down due to burning
+                }
+                // TODO: Apply burning damage over time
+                break;
 
-        case ECosmicBreathType::StellarWind:
-            // Apply Stellar Wind effects (levitation and confusion)
-            if (ACharacter* Character = Cast<ACharacter>(Target))
-            {
-                // Apply movement speed modifier
-                Character->GetCharacterMovement()->MaxWalkSpeed *= 1.0f; // Maintain speed
-            }
-            break;
+            case ECosmicBreathType::LunarTide:
+                // Apply Lunar Tide effects (freezing and corruption)
+                if (Character->GetCharacterMovement())
+                {
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.7f; // Slow down due to freezing
+                }
+                // TODO: Apply freezing effects
+                break;
+
+            case ECosmicBreathType::StellarWind:
+                // Apply Stellar Wind effects (disruption and warping)
+                if (Character->GetCharacterMovement())
+                {
+                    Character->GetCharacterMovement()->MaxWalkSpeed *= 0.9f; // Slight slowdown
+                }
+                // TODO: Apply warping effects
+                break;
+        }
+
+        OnActorAffected(Target, EffectStrength);
     }
-
-    OnActorAffected(Target, EffectStrength);
 }
 
 float ACosmicBreath::CalculateEffectStrength(AActor* Target)
 {
-    // This is a placeholder for a more complex effect strength calculation
-    // In a real implementation, this would consider various factors like:
-    // - Target's distance from breath origin
-    // - Target's alignment with cosmic forces
-    // - Target's resonance levels
-    // - Target's echo interactions
-    // - Environmental factors
+    if (!Target) return 0.0f;
 
-    // For now, return a value based on distance
+    // Calculate base strength based on distance
     float Distance = FVector::Distance(GetActorLocation(), Target->GetActorLocation());
-    return FMath::Clamp(1.0f - (Distance / BreathRange), 0.0f, 1.0f);
+    float DistanceFactor = FMath::Clamp(1.0f - (Distance / BreathRange), 0.0f, 1.0f);
+
+    // Apply breath type modifier
+    float TypeModifier = 1.0f;
+    switch (CurrentBreathType)
+    {
+        case ECosmicBreathType::SolarFlare:
+            TypeModifier = 1.2f;
+            break;
+        case ECosmicBreathType::LunarTide:
+            TypeModifier = 1.5f;
+            break;
+        case ECosmicBreathType::StellarWind:
+            TypeModifier = 1.3f;
+            break;
+    }
+
+    return BreathPower * DistanceFactor * TypeModifier;
 }
 
 void ACosmicBreath::GenerateResonance()

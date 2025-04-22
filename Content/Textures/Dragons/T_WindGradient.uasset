@@ -1,0 +1,70 @@
+{
+    "Class": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Default",
+        "Filter": "TF_Trilinear",
+        "AddressX": "TA_Clamp",
+        "AddressY": "TA_Clamp",
+        "MipGenSettings": "TMGS_NoMipmaps",
+        "TextureGroup": "TEXTUREGROUP_Effects",
+        "SRGB": true,
+        "LODGroup": "TEXTUREGROUP_Particles",
+        "Source": {
+            "Format": "PF_R8G8B8A8",
+            "Width": 256,
+            "Height": 256,
+            "Data": [
+                // Procedural gradient data
+                // Center: Light blue (0.8, 0.9, 1.0)
+                // Middle: Deep blue (0.2, 0.4, 0.8)
+                // Edge: Transparent (0.0, 0.0, 0.0, 0.0)
+                // Add noise for wind-like appearance
+                for (int y = 0; y < 256; y++) {
+                    for (int x = 0; x < 256; x++) {
+                        float dx = (x - 128) / 128.0f;
+                        float dy = (y - 128) / 128.0f;
+                        float dist = FMath::Sqrt(dx * dx + dy * dy);
+                        
+                        // Base color transition
+                        FLinearColor color;
+                        if (dist < 0.5f) {
+                            color = FLinearColor::Lerp(
+                                FLinearColor(0.8f, 0.9f, 1.0f),
+                                FLinearColor(0.2f, 0.4f, 0.8f),
+                                dist * 2.0f
+                            );
+                        } else {
+                            color = FLinearColor::Lerp(
+                                FLinearColor(0.2f, 0.4f, 0.8f),
+                                FLinearColor(0.0f, 0.0f, 0.0f),
+                                (dist - 0.5f) * 2.0f
+                            );
+                        }
+                        
+                        // Add wind-like noise
+                        float noise = FMath::PerlinNoise2D(FVector2D(x * 0.1f, y * 0.1f)) * 0.2f;
+                        color.R += noise;
+                        color.G += noise;
+                        color.B += noise;
+                        
+                        // Add swirling pattern
+                        float angle = FMath::Atan2(dy, dx);
+                        float swirl = FMath::Sin(angle * 8.0f + dist * 16.0f) * 0.1f;
+                        color.R += swirl;
+                        color.G += swirl;
+                        color.B += swirl;
+                        
+                        // Clamp and set alpha
+                        color.R = FMath::Clamp(color.R, 0.0f, 1.0f);
+                        color.G = FMath::Clamp(color.G, 0.0f, 1.0f);
+                        color.B = FMath::Clamp(color.B, 0.0f, 1.0f);
+                        color.A = 1.0f - dist;
+                        
+                        // Add to texture data
+                        Data[y * 256 + x] = (color.A * 255 << 24) | (color.B * 255 << 16) | (color.G * 255 << 8) | (color.R * 255);
+                    }
+                }
+            ]
+        }
+    }
+} 

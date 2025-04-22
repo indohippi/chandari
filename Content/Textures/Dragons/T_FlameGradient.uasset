@@ -1,0 +1,49 @@
+{
+    "Class": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Default",
+        "Filter": "TF_Trilinear",
+        "AddressX": "TA_Clamp",
+        "AddressY": "TA_Clamp",
+        "MipGenSettings": "TMGS_FromTextureGroup",
+        "TextureGroup": "TEXTUREGROUP_Effects",
+        "SRGB": true,
+        "LODGroup": "TEXTUREGROUP_Effects",
+        "Source": {
+            "Format": "PF_R8G8B8A8",
+            "Width": 256,
+            "Height": 256,
+            "Data": [
+                // Procedurally generated radial gradient
+                // Center: 255,255,255,255 (white)
+                // Middle: 255,204,51,204 (golden)
+                // Edge: 0,0,0,0 (transparent)
+                // Using smoothstep for transition
+                for (int y = 0; y < 256; y++) {
+                    for (int x = 0; x < 256; x++) {
+                        float dx = (x - 128) / 128.0f;
+                        float dy = (y - 128) / 128.0f;
+                        float dist = FMath::Sqrt(dx*dx + dy*dy);
+                        float alpha = FMath::SmoothStep(1.0f, 0.0f, dist);
+                        
+                        // Color transition from white to golden
+                        float colorBlend = FMath::SmoothStep(0.5f, 1.0f, dist);
+                        uint8 r = FMath::Lerp(255, 255, colorBlend);
+                        uint8 g = FMath::Lerp(255, 204, colorBlend);
+                        uint8 b = FMath::Lerp(255, 51, colorBlend);
+                        uint8 a = FMath::RoundToInt(alpha * 255);
+                        
+                        // Add some noise for flame-like appearance
+                        float noise = FMath::PerlinNoise2D(x * 0.1f, y * 0.1f) * 0.2f;
+                        r = FMath::Clamp(r + noise * 255, 0, 255);
+                        g = FMath::Clamp(g + noise * 255, 0, 255);
+                        b = FMath::Clamp(b + noise * 255, 0, 255);
+                        
+                        // Store pixel data
+                        Data[y * 256 + x] = (a << 24) | (b << 16) | (g << 8) | r;
+                    }
+                }
+            ]
+        }
+    }
+} 

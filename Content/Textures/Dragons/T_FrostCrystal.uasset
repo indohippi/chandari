@@ -1,0 +1,41 @@
+{
+    "Type": "Texture2D",
+    "Properties": {
+        "CompressionSettings": "TC_Default",
+        "Filter": "TF_Trilinear",
+        "LODGroup": "TEXTUREGROUP_Particles",
+        "MipGenSettings": "TMGS_FromTextureGroup",
+        "PowerOfTwoMode": "ETexturePowerOfTwoSetting::None",
+        "SizeX": 256,
+        "SizeY": 256,
+        "Format": "PF_R8G8B8A8",
+        "ProceduralData": {
+            "Expression": "ProceduralCrystal",
+            "Properties": {
+                "Resolution": 256,
+                "BaseColor": {
+                    "R": 0.4,
+                    "G": 1.0,
+                    "B": 1.2,
+                    "A": 1.0
+                },
+                "CrystalCount": 8,
+                "CrystalSize": 0.4,
+                "CrystalSharpness": 0.8,
+                "CrystalRotation": 45.0,
+                "EdgeHighlight": {
+                    "R": 0.6,
+                    "G": 1.2,
+                    "B": 1.4,
+                    "A": 1.0
+                },
+                "EdgeWidth": 0.1,
+                "NoiseIntensity": 0.2,
+                "NoiseScale": 0.2,
+                "AlphaFalloff": 0.9,
+                "ReflectionStrength": 0.7,
+                "ReflectionScale": 0.3
+            }
+        }
+    }
+} 
