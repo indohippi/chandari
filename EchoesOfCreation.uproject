@@ -1,0 +1,43 @@
+{
+    "FileVersion": 3,
+    "EngineAssociation": "5.3",
+    "Category": "",
+    "Description": "",
+    "Modules": [
+        {
+            "Name": "EchoesOfCreation",
+            "Type": "Runtime",
+            "LoadingPhase": "Default",
+            "AdditionalDependencies": [
+                "Engine",
+                "GameplayAbilities",
+                "GameplayTags",
+                "GameplayTasks",
+                "Niagara",
+                "EnhancedInput"
+            ]
+        }
+    ],
+    "Plugins": [
+        {
+            "Name": "GameplayAbilities",
+            "Enabled": true
+        },
+        {
+            "Name": "GameplayTags",
+            "Enabled": true
+        },
+        {
+            "Name": "GameplayTasks",
+            "Enabled": true
+        },
+        {
+            "Name": "Niagara",
+            "Enabled": true
+        },
+        {
+            "Name": "EnhancedInput",
+            "Enabled": true
+        }
+    ]
+} 
